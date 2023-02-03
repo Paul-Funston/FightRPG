@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace FightRPG
 {
-    public class Weapon
+    public class Weapon : Equipment
     {
+
+
+        public Weapon(string name, int value, int strength, int defence) : base(name, value, strength, defence)
+        {
+            
+        }
     }
 }
