@@ -11,7 +11,7 @@ namespace FightRPG
         protected int _id;
         public int Id { get { return _id; } }
         protected string _name; 
-        public string Name { get; }
+        public string Name { get { return _name; } }
         //private string _description;
         //public string Description { get { return _description; } }
         protected int _value;

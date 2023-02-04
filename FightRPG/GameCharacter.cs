@@ -31,7 +31,14 @@ namespace FightRPG
         protected int _bonusHealth = 0;
         
         private int _currentHealth;
-        public int CurrentHealth { get; set; }
+        public int CurrentHealth { get { return _currentHealth; } }
+
+        private bool _canAct = true;
+        public bool CanAct 
+        {
+            get { return _canAct; } 
+            set { _canAct = value; }
+        }
 
         public int GetEffectiveStrength()
         {
@@ -53,10 +60,30 @@ namespace FightRPG
             return _currentHealth;
         }
 
+        public int ChangeHealth(int n)
+        {
+            int expectedHealth = _currentHealth + n;
+
+            if (expectedHealth > GetMaxHealth())
+            {
+                expectedHealth = GetMaxHealth();
+            } else if (expectedHealth < 0)
+            {
+                expectedHealth = 0;
+            }
+            _currentHealth = expectedHealth;
+
+            if (_currentHealth == 0)
+            {
+                CanAct = false;
+            }
+
+            return _currentHealth;
+        }
+
         static GameCharacter() => currentID = 0;
         private int GetNextID() => ++currentID;
         private static int currentID;
-        //public GameCharacter() { }
 
         public GameCharacter(string name, int level, int health, int strength, int defence )
         {

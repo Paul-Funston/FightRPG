@@ -16,6 +16,9 @@ namespace FightRPG
 
         private static HashSet<Hero> _party = new();
 
+        private static int _currentGold = 0;
+        private static int _currentXp = 0;
+
 
         public static void GameStart()
         {
@@ -26,7 +29,10 @@ namespace FightRPG
         }
         private static void InitializeAssets()
         {
-
+            _currentGold = 0;
+            _currentXp = 0;
+            _gameDay = 1;
+            _inventory = new();
         }
 
         private static Hero CreatePlayer()
@@ -181,18 +187,52 @@ namespace FightRPG
             OpenMenu();
         }
 
-        private static Fight CreateFight(int n = 1)
+        private static Fight CreateFight(int NumberOfEnemies = 1)
         {
-            List<Monster> enemies = new List<Monster>();
+            HashSet<Monster> enemies = new HashSet<Monster>();
+            
+            for(int i = 1; i <= NumberOfEnemies; i++)
+            {
+                int randomMonster = new Random().Next(Assets.BestiaryCount);
+                Monster newMonster = Assets.GetMonster(randomMonster, _gameDay);
+                enemies.Add(newMonster);
+            }
 
+            try
+            {
+               Fight newFight = new Fight(_party, enemies);
+                return newFight;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
-            Fight newFight = new Fight(_party, enemies);
-            return newFight;
+            return Assets.debugFight;
+
         }
 
         private static void StartFight(Fight fight)
         {
+            fight.FightIntro();
+            while(fight.IsActive)
+            {
+                int turn = 0;
+                Console.WriteLine($"Turn {++turn}");
 
+                fight.StartTurn();
+
+            }
+
+            if (fight.WasFightWon)
+            {
+                _currentGold += fight.GoldReward;
+                _currentXp +=fight.XpReward;
+            } else
+            {
+
+            }
+            _gameDay++;
         }
 
     }
