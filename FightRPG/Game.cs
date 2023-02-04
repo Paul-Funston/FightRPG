@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -39,11 +40,11 @@ namespace FightRPG
         {
             Armor startingArmor = new Armor("T-Shirt", 1, 0, 1);
             Weapon startingWeapon = new Weapon("KeyBlade", 0, 1, 1);
-            Hero playerHero = null;
+            Hero? playerHero = null;
             string heroName = "";
             
             // skip name for testing Remove this line to name player
-            playerHero = new Hero("Test", 5, 5, 20, 1, startingArmor, startingWeapon);
+            playerHero = new Hero("Test", 1, 20, 5, 5, startingArmor, startingWeapon);
 
             Console.WriteLine("Welcome to the game!");
             Console.WriteLine("Please Name your Hero");
@@ -63,7 +64,7 @@ namespace FightRPG
 
                 try
                 {
-                    playerHero = new Hero(heroName, 5, 5, 20, 1, startingArmor, startingWeapon);
+                    playerHero = new Hero(heroName, 1, 20, 5, 5, startingArmor, startingWeapon);
                 } catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -74,7 +75,7 @@ namespace FightRPG
             return playerHero;
         }
 
-        private static int GetInput()
+        public static int GetInput()
         {
             int input = -1;
             while (input < 0)
@@ -214,17 +215,12 @@ namespace FightRPG
 
         private static void StartFight(Fight fight)
         {
-            fight.FightIntro();
-            while(fight.IsActive)
-            {
-                int turn = 0;
-                Console.WriteLine($"Turn {++turn}");
 
-                fight.StartTurn();
+            bool fightWon = fight.EnterFight();
 
-            }
 
-            if (fight.WasFightWon)
+
+            if (fightWon)
             {
                 _currentGold += fight.GoldReward;
                 _currentXp +=fight.XpReward;
@@ -234,6 +230,8 @@ namespace FightRPG
             }
             _gameDay++;
         }
+
+
 
     }
 }

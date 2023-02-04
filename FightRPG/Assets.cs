@@ -94,23 +94,23 @@ namespace FightRPG
         }
         public class Goblin : Monster
         {
-            public Goblin(int level) : base("Goblin", 5, 1, 10, level, 0) { }
+            public Goblin(int level) : base("Goblin", level, 10, 2, 4, 0) { }
         }
         public class Kobold : Monster
         {
-            public Kobold(int level) : base("Kobold", 5, 1, 10, level, 1) { }
+            public Kobold(int level) : base("Kobold", level, 10, 4, 2, 1) { }
         }
         public class Slime : Monster
         {
-            public Slime(int level) : base("Slime", 1, 5, 10, level, 2) { }
+            public Slime(int level) : base("Slime", level, 10, 1, 10, 2) { }
         }
         public class YuanTi : Monster
         {
-            public YuanTi(int level) : base("YuanTi", 6, 4, 15, level, 3) { }
+            public YuanTi(int level) : base("YuanTi", level, 15, 5, 5, 3) { }
         }
         public class Dragon : Monster
         {
-            public Dragon(int level) : base("Dragon", 10, 10, 30, level, 4) { }
+            public Dragon(int level) : base("Dragon", level, 30, 15, 10, 4) { }
         }
 
         // Other 

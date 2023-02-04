@@ -16,6 +16,7 @@ namespace FightRPG
         protected string _nickname;
         public string Nickname { get { return _nickname; } }
 
+        public string FullName { get { return _nickname + " " + _name; } }
         protected int _xpPrize = 1;
         public int XpPrize { get { return _xpPrize; } }
         protected int _goldPrize = 1;
@@ -42,7 +43,12 @@ namespace FightRPG
             return team;
         }
 
-        public Monster(string name, int strength, int defence, int health, int level, int bestiaryIndex) : base(name, strength, defence, health, level)
+        public new string Examine()
+        {
+            return $"The {FullName} " + base.Examine();
+        }
+
+        public Monster(string name, int level, int health, int strength, int defence, int bestiaryIndex) : base(name, level, health, strength, defence)
         {
             _bestiaryIndex = bestiaryIndex;
             SetBonusStats(level);

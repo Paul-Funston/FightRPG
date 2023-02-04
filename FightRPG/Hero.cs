@@ -36,9 +36,14 @@ namespace FightRPG
         }
 
  
+        public new string Examine()
+        {
+            return $"{Name} " + base.Examine();
+        }
+
         
 
-        public Hero(string name, int strength, int defence, int health, int level, Armor startingArmor, Weapon startingWeapon) : base(name, strength, defence, health, level)
+        public Hero(string name, int level, int health, int strength, int defence, Armor startingArmor, Weapon startingWeapon) : base(name, level, health, strength, defence)
         {
             EquipItem(startingArmor);
             EquipItem(startingWeapon);

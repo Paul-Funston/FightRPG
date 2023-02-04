@@ -81,6 +81,11 @@ namespace FightRPG
             return _currentHealth;
         }
 
+        public string Examine()
+        {
+            return $"has {CurrentHealth} / {GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
+        }
+
         static GameCharacter() => currentID = 0;
         private int GetNextID() => ++currentID;
         private static int currentID;
