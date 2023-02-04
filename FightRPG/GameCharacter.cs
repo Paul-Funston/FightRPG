@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FightRPG
 {
-    public class GameCharacter
+    public class GameCharacter : GameObject
     {
         protected int _id;
         public int Id { get { return _id; } }
@@ -86,13 +86,10 @@ namespace FightRPG
             return $"has {CurrentHealth} / {GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
         }
 
-        static GameCharacter() => currentID = 0;
-        private int GetNextID() => ++currentID;
-        private static int currentID;
+
 
         public GameCharacter(string name, int level, int health, int strength, int defence )
         {
-            _id = GetNextID();
 
             if (name.Length < 2 || !name.All(c => Char.IsLetter(c) || Char.IsWhiteSpace(c)))
             {

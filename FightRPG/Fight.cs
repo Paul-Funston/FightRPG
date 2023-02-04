@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FightRPG
 {
-    public class Fight
+    public class Fight : Location
     {
         private HashSet<Hero> _activeParty;
         private HashSet<Monster> _enemies;
@@ -260,7 +260,7 @@ namespace FightRPG
             return SelectTarget();
         }
 
-        public Fight(HashSet<Hero> party, HashSet<Monster> enemies)
+        public Fight(HashSet<Hero> party, HashSet<Monster> enemies) : base("Fight")
         {
             if (party.Count > 0 && enemies.Count > 0)
             {

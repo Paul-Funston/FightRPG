@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FightRPG
 {
-    public class Item
+    public class Item : GameObject
     {
         protected int _id;
         public int Id { get { return _id; } }

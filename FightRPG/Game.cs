@@ -19,6 +19,8 @@ namespace FightRPG
 
         private static int _currentGold = 0;
         private static int _currentXp = 0;
+        private static Location _currentLocation;
+        private static Location? _previousLocation = null;
 
 
         public static void GameStart()
@@ -75,20 +77,7 @@ namespace FightRPG
             return playerHero;
         }
 
-        public static int GetInput()
-        {
-            int input = -1;
-            while (input < 0)
-            {
-               Console.Write("> ");
-               char test = Console.ReadKey().KeyChar;
-               Console.Write(" ");
-               input = (int)Char.GetNumericValue(test);
-
-            }
-
-            return input;
-        }
+    
 
         private static void OpenMenu()
         {
@@ -232,6 +221,127 @@ namespace FightRPG
         }
 
 
+        // Controls
 
+        public static int GetInput()
+        {
+            int input = -1;
+            while (input < 0 || input > 10)
+            {
+                Console.Write("> ");
+                char test = Console.ReadKey().KeyChar;
+                Console.Write(" ");
+                input = (int)Char.GetNumericValue(test);
+
+            }
+
+            return input;
+        }
+
+        public static Location PlayerChooseLocation(Location[] arg)
+        {
+            bool hasSelected = false;
+            int optionIndex = -1;
+            int rollingIndex = 0;
+            int numOfPages = arg.Length / 8 + 1;
+            while (!hasSelected)
+            {
+                // display the options (8 max or to end of list)
+                for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
+                {
+                    Console.WriteLine($"{i + 1}: {arg[i + rollingIndex].Name}");
+                }
+
+                Console.WriteLine("9: Previous");
+                Console.WriteLine("0: Next");
+
+                int input = -1;
+                while (input < 0 || input > 10)
+                {
+                    input = GetInput();
+                }
+                Console.WriteLine();
+
+                if (input == 0)
+                {
+                    if (rollingIndex + 8 < arg.Length)
+                    {
+                        rollingIndex += 8;
+                    }
+                }
+                else if (input == 9)
+                {
+                    if (rollingIndex - 8 >= 0)
+                    {
+                        rollingIndex -= 8;
+                    }
+                }
+                else
+                {
+                    hasSelected = true;
+                    optionIndex = input + rollingIndex - 1;
+                }
+            }
+            Location choice = arg[optionIndex];
+            return choice;
+        }
+
+        public static string PlayerChoosesString(string[] arg)
+        {
+            bool hasSelected = false;
+            int optionIndex = -1;
+            int rollingIndex = 0;
+            int numOfPages = arg.Length / 8 + 1;
+            while (!hasSelected)
+            {
+                // display the options (8 max or to end of list)
+                for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
+                {
+                    Console.WriteLine($"{i + 1}: {arg[i + rollingIndex]}");
+                }
+
+                Console.WriteLine("9: Previous");
+                Console.WriteLine("0: Next");
+
+                int input = -1;
+                while (input < 0 || input > 10)
+                {
+                    input = GetInput();
+                }
+                Console.WriteLine();
+
+                if (input == 0)
+                {
+                    if (rollingIndex + 8 < arg.Length)
+                    {
+                        rollingIndex += 8;
+                    }
+                }
+                else if (input == 9)
+                {
+                    if (rollingIndex - 8 >= 0)
+                    {
+                        rollingIndex -= 8;
+                    }
+                }
+                else
+                {
+                    hasSelected = true;
+                    optionIndex = input + rollingIndex - 1;
+                }
+            }
+            string choice = arg[optionIndex];
+            return choice;
+
+        }
+
+        public static void MoveLocation(Location newLocation, Location prevLocation)
+        {
+            newLocation.TravelTo(prevLocation);
+            _currentLocation = newLocation;
+            _currentLocation.ChooseAction();
+        }
+
+        
     }
 }

@@ -23,6 +23,11 @@ namespace FightRPG
         private static HashSet<Armor> _armor = InitializeArmor();
         public static HashSet<Armor> GetArmor() { return _armor.ToHashSet(); }
 
+        private static HashSet<GameObject> _allObjects = new();
+        public static HashSet<GameObject> GetAllObjects () { return _allObjects.ToHashSet(); }
+
+        public static void AddObject(GameObject obj) { _allObjects.Add(obj); }
+
         private static string[] _adjectives = InitializeAdjectives();
         public static string[] Adjectives { get { return _adjectives.ToArray(); } }
 
@@ -113,6 +118,16 @@ namespace FightRPG
             public Dragon(int level) : base("Dragon", level, 30, 15, 10, 4) { }
         }
 
+        // Locations
+
+        public static Location Menu = new Location("Menu");
+        public static Location Town = new Location("Town");
+        public static Location.Shop WeaponShop = new Location.Shop("Weapons");
+        
+        public static Location.Shop ArmorShop = new Location.Shop("Armor");
+        public static Location.Shop Sanctuary = new Location.Shop("Sanctuary");
+        public static Location.Shop Tavern = new Location.Shop("Tavern");
+        public static Location.Dungeon Forest = new Location.Dungeon("Forest");
         // Other 
         private static string[] InitializeAdjectives()
         {
