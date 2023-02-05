@@ -34,20 +34,49 @@ namespace FightRPG
         {
             _equippedWeapon= weapon;
         }
-
+       
  
         public new string Examine()
         {
             return $"{Name} " + base.Examine();
         }
+        private void ExamineEnemy()
+        {
 
+        }
+        
+
+        private new int GetTarget()
+        {
+            int targetId = -1;
+            while (targetId < 0)
+            {
+                targetId = Game.PlayerSelectTarget();
+            }
+            return targetId;
+        }
+        private void UseItem()
+        {
+
+        }
+        private void UseSkill()
+        {
+
+        }
         
 
         public Hero(string name, int level, int health, int strength, int defence, Armor startingArmor, Weapon startingWeapon) : base(name, level, health, strength, defence)
         {
-            EquipItem(startingArmor);
-            EquipItem(startingWeapon);
+            _equippedArmor = startingArmor;
+            _equippedWeapon = startingWeapon;
             Assets.AddHero(Id, this);
+
+            //_actionsAvailable.Add("Attack", AttackEnemy); - Moved to GameCharacter
+            //_actionsAvailable.Add("Skill", UseSkill);
+
+            _actionsAvailable.Add("Examine", ExamineEnemy);
+            //_actionsAvailable.Add("Item", UseItem);
+
         }
     }
 }

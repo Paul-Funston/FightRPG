@@ -12,13 +12,46 @@ namespace FightRPG
         private int[] _heroIds;
         //private HashSet<Monster> _enemies;
         private int[] _monsterIds;
-       // public HashSet<Monster> Enemies { get { return _enemies.ToHashSet(); } }
+        private int _turnCount = 0;
+        private bool _isPlayersTurn;
+
+        private int _numOfHeroesWithHealth = 0;
+        private int[] _heroesWithHealthIds = new int[0];
+        private int _numOfMonstersWithHealth = 0;
+        private int[] _monstersWithHealthIds = new int[0];
+        public int[] MonstersWithHealthIds { get { return _monstersWithHealthIds;} }
+        public int[] HeroesWithHealthIds { get { return _heroesWithHealthIds;} }
+        private void SetHealthyCombatants()
+        {
+            SetHealthyMembersOfTeam(_heroIds, _numOfHeroesWithHealth, _heroesWithHealthIds);
+            SetHealthyMembersOfTeam(_monsterIds, _numOfMonstersWithHealth, _monstersWithHealthIds);
+        }
+        private void SetHealthyMembersOfTeam(int[] teamIds, int numOfHealthyMembersToSet, int[] healthyMembersToSet )
+        {
+            List<int> healthyMembers = new List<int>();
+
+            foreach(int id in teamIds)
+            {
+                GameCharacter? c = Assets.GetCharacterById(id);
+                if( c != null && c.CurrentHealth > 0 )
+                {
+                    healthyMembers.Add(id);
+                }
+            }
+
+            healthyMembersToSet = healthyMembers.ToArray();
+            numOfHealthyMembersToSet = healthyMembersToSet.Length;
+
+        }
+
+
+        // public HashSet<Monster> Enemies { get { return _enemies.ToHashSet(); } }
         //private bool _isActive = true;
         //public bool IsActive { get { return _isActive; } }
 
         //private bool _wasFightWon = false;
-        private int _turnCount = 0;
-        private bool _isPlayersTurn;
+
+
         //public int TurnCount { get { return _turnCount; } }
 
         //private int _goldReward;
@@ -29,8 +62,10 @@ namespace FightRPG
 
         public new void ChooseAction()
         {
+            Console.WriteLine($"Fight Turn {++_turnCount}");
+
             // if its PlayerTurn - player gets to choose an action // base.ChooseAction() 
-                // else  the monsters get to attack MonsterTurn();
+            // else  the monsters get to attack MonsterTurn();
             if (_isPlayersTurn)
             {
                 try
@@ -63,29 +98,62 @@ namespace FightRPG
 
         private void TakeTurn(int[] actingTeam)
         {
+            bool isFightFinished = false;
             foreach(int id in actingTeam)
             {
+
                 GameCharacter? activeCharacter = Assets.GetCharacterById(id);
                 try
                 {
                     if(activeCharacter.CanAct)
                     {
                         activeCharacter.ChooseAction();
-
                     }
                 } catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
+
+                isFightFinished = IsFightFinished();
+                if (isFightFinished) { break; }
             }
-            // for each hero in party take their action
+
+            if (isFightFinished)
+            {
+                EndFight();
+            }
         }
         private void PlayRound()
         {
             TakeTurn(_heroIds);
         }
    
- 
+        private bool IsFightFinished()
+        {
+            SetHealthyCombatants();
+
+            if (_numOfHeroesWithHealth == 0 || _numOfMonstersWithHealth == 0)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+
+        }
+        private void EndFight()
+        {
+            bool wasFightWon = _numOfHeroesWithHealth > 0;
+
+            if (wasFightWon)
+            {
+                Game.FightWon(this);
+            } else
+            {
+                Game.FightLost();
+            }
+
+        }
 
         /*
         
@@ -370,6 +438,7 @@ namespace FightRPG
             _actionsAvailable.Remove("Travel");
             _actionsAvailable.Add("Escape", Travel);
             _actionsAvailable.Remove("Inventory");
+            SetHealthyCombatants();
             Assets.AddFight(Id, this);
         }
     }

@@ -13,6 +13,7 @@ namespace FightRPG
     public static class Game
     {
         private static int _gameDay = 1;
+        private static int _daysPrevious = 0;
         public static int GameDay { get { return _gameDay; } }
         private static bool _firstLoad = true;
         private static Dictionary<Item, int> _inventory = new Dictionary<Item, int>();
@@ -26,7 +27,7 @@ namespace FightRPG
         {
             {"Days This Life", _gameDay },
             {"Battles Won This Life", 0 },
-            {"Total Days Played", 1 },
+            {"Total Days Played", _gameDay + _daysPrevious },
             {"Total Battles Won", 0 },
             {"Times Defeated", 0 },
         };
@@ -296,7 +297,102 @@ namespace FightRPG
             _gameDay++;
         }
         */
+        // Handling Combat
 
+        public static void CharacterUseAbility(GameCharacter attacker, int abilityId, int defenderId)
+        {
+            int attackerStrength = attacker.GetEffectiveStrength();
+
+            Ability? ability = Assets.GetObjectById<Ability>(abilityId);
+            if (ability == null)
+            {
+                ability = new Ability("Attack");
+            }
+
+            attackerStrength += ability.Value;
+
+            try
+            {
+                GameCharacter? defender = Assets.GetObjectById<GameCharacter>(defenderId);
+                int defenderDefence = defender.GetEffectiveDefence();
+                int damage = attackerStrength - defenderDefence;
+                if (damage < 1) { damage = 1; } // minimum 1 damage every attack
+                defender.DealDamage(damage);
+                SendDamageMessage(attacker, defender, damage) ;
+
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        private static void SendDamageMessage(GameCharacter attacker, GameCharacter defender, int damage)
+        {
+            Console.Write($"{attacker.Name} attacks {Assets.GetRandomAdverb}.");
+            Console.WriteLine($"{defender.Name} takes {damage} damage.");
+            int currentHealth = defender.CurrentHealth;
+            int maxHealth = defender.GetMaxHealth();
+
+            if (currentHealth == 0) 
+            {
+                Console.WriteLine($"{defender.Name} is knocked out.");
+            } else if (currentHealth < maxHealth / 4 )
+            {
+                Console.WriteLine($"{defender.Name} can't take much more.");
+            } else if (currentHealth < maxHealth / 2)
+            {
+                Console.WriteLine($"{defender.Name} is really slowing down.");
+            }
+            
+        }
+
+        public static int PlayerSelectTarget()
+        {
+            try
+            {
+                int[] options = ((Fight)_currentLocation).MonstersWithHealthIds;
+                return GetPlayerChoice(options, "{obj.Name}");
+
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return -1;
+        }
+
+        public static int GetMonsterTarget()
+        {
+            int choice = -1;
+            try
+            {
+                int[] options = ((Fight)_currentLocation).HeroesWithHealthIds;
+                choice = options[0];
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            if (choice < 0)
+            {
+                choice = new Assets.Goblin(1).Id;
+                Console.WriteLine("Where did that go?");
+
+            }
+
+            return choice;
+        }
+
+        // Fight Over
+
+        public static void FightWon(Fight fight)
+        {
+
+        }
+
+        public static void FightLost()
+        {
+
+        }
         // Controls
 
         public static int GetInput()
@@ -500,6 +596,21 @@ namespace FightRPG
 
         // Information and Utility Methods
 
+        public static void ReturnToTown()
+        {
+            HealParty();
+            _gameDay++;
+        }
+
+        public static void HealParty()
+        {
+            foreach(Hero hero in _party)
+            {
+                hero.SetCurrentHealthToMax();
+                hero.CanAct = true;
+            }
+        }
+
         public static void ClearScreen(int n = 100)
         {
             int position = Console.GetCursorPosition().Top;
@@ -537,8 +648,8 @@ namespace FightRPG
 
         private static void TestMethod()
         {
-            Fight? obj = Assets.GetObjectById<Fight>(5);
-           Console.WriteLine($"Testing Generic Method {obj}");
+           //Fight? obj = Assets.GetObjectById<Fight>(5);
+           //Console.WriteLine($"Testing Generic Method {obj}");
             
         }
         

@@ -40,7 +40,7 @@ namespace FightRPG
             }
         }
 
-        // Equipment
+        // Items
         private static Dictionary<int, Weapon> _allWeapons = new();
         private static Dictionary<int, Armor> _allArmor = new();
 
@@ -51,6 +51,11 @@ namespace FightRPG
         public static void AddArmor(int id, Armor obj)
         {
             _allArmor.Add(id, obj);
+        }
+        private static Dictionary<int, Ability> _allAbilities = new();
+        public static void AddAbility(int id, Ability obj)
+        {
+            _allAbilities.Add(id, obj);
         }
 
         // Locations
@@ -178,6 +183,7 @@ namespace FightRPG
             InitializeLocations();
             InitializeWeapons();
             InitializeArmor();
+            InitializeAbilities();
         }
         
 
@@ -218,6 +224,10 @@ namespace FightRPG
                 new Armor("Breastplate",        750, 0, 30),
                 new Armor("Plate",              1500, 0, 50)
             };
+        }
+        private static void InitializeAbilities()
+        {
+            new Ability("Attack");
         }
 
         // Consumables?

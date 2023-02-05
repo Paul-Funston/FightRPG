@@ -36,6 +36,8 @@ namespace FightRPG
             set { _canAct = value; }
         }
 
+        private Dictionary<int, bool> _abilitiesAvailable = new();
+
         public int GetEffectiveStrength()
         {
             return _baseStrength + _bonusStrength;
@@ -69,19 +71,40 @@ namespace FightRPG
             }
             _currentHealth = expectedHealth;
 
-            if (_currentHealth == 0)
-            {
-                CanAct = false;
-            }
 
             return _currentHealth;
         }
 
+        public int DealDamage(int n)
+        {
+            int newHealth = ChangeHealth(n * -1);
+            if (newHealth == 0) { CanAct = false; }
+            return newHealth;
+        }
+
+        
         public string Examine()
         {
             return $"{Name} is level {_level}, has {CurrentHealth}/{GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
         }
 
+        protected void AttackEnemy()
+        {
+            int targetId = GetTarget();
+
+            Game.CharacterUseAbility(this, new Ability("Test").Id, targetId);
+        }
+
+        protected int GetTarget()
+        {
+            int targetId = -1;
+            while (targetId < 0)
+            {
+                targetId = Game.GetMonsterTarget();
+            }
+
+            return targetId;
+        }
 
 
         public GameCharacter(string name, int level, int health, int strength, int defence ) : base(name)
@@ -101,6 +124,7 @@ namespace FightRPG
 
             SetCurrentHealthToMax();
             Assets.AddCharacter(Id, this);
+            _actionsAvailable.Add("Attack", AttackEnemy);
         }
         
     }

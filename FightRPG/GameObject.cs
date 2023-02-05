@@ -25,7 +25,7 @@ namespace FightRPG
         {
             if (_actionsAvailable.Count == 0) 
             {
-                throw new Exception("No actions available.");
+                throw new Exception($"No actions found for {Name}.");
             } else if (_actionsAvailable.Count == 1)
             {
                 string onlyOption = _actionsAvailable.Keys.First();

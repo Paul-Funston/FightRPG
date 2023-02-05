@@ -43,6 +43,8 @@ namespace FightRPG
             return team;
         }
 
+        
+
         public new string Examine()
         {
             return $"The {FullName} " + base.Examine();
