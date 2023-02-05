@@ -8,11 +8,7 @@ namespace FightRPG
 {
     public class GameCharacter : GameObject
     {
-        protected int _id;
-        public int Id { get { return _id; } }
-
-        protected string _name;
-        public string Name { get { return _name; } }
+       
 
         protected int _level;
         public int Level { get; set; }
@@ -83,22 +79,14 @@ namespace FightRPG
 
         public string Examine()
         {
-            return $"has {CurrentHealth} / {GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
+            return $"{Name} is level {_level}, has {CurrentHealth}/{GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
         }
 
 
 
-        public GameCharacter(string name, int level, int health, int strength, int defence )
+        public GameCharacter(string name, int level, int health, int strength, int defence ) : base(name)
         {
 
-            if (name.Length < 2 || !name.All(c => Char.IsLetter(c) || Char.IsWhiteSpace(c)))
-            {
-                throw new Exception("A characters name must have at least 2 characters that are all letters.");
-            }
-            else
-            {
-                _name = name;
-            }
 
             if (level < 0 || strength < 0 || defence < 0 || health < 0)
             {
@@ -112,7 +100,7 @@ namespace FightRPG
             }
 
             SetCurrentHealthToMax();
-
+            Assets.AddCharacter(Id, this);
         }
         
     }

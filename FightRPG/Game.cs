@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -12,36 +13,75 @@ namespace FightRPG
     public static class Game
     {
         private static int _gameDay = 1;
+        public static int GameDay { get { return _gameDay; } }
+        private static bool _firstLoad = true;
         private static Dictionary<Item, int> _inventory = new Dictionary<Item, int>();
-        private static HashSet<Item> _availableItems = new();
-
         private static HashSet<Hero> _party = new();
-
+        public static string OptionItem = "{arg[i + rollingIndex]}";
         private static int _currentGold = 0;
         private static int _currentXp = 0;
         private static Location _currentLocation;
         private static Location? _previousLocation = null;
+        private static Dictionary<string, int> _statistics = new Dictionary<string, int>()
+        {
+            {"Days This Life", _gameDay },
+            {"Battles Won This Life", 0 },
+            {"Total Days Played", 1 },
+            {"Total Battles Won", 0 },
+            {"Times Defeated", 0 },
+        };
+
+        public static int[] GetActiveParty()
+        {
+            int[] heroIds = new int[_party.Count];
+            Hero[] heroArray = _party.ToArray();
+            for (int i = 0; i < heroIds.Length; i++)
+            {
+                heroIds[i] = heroArray[i].Id;
+            }
+
+            return heroIds;
+        }
 
 
         public static void GameStart()
         {
             InitializeAssets();
+            
             Hero player = CreatePlayer();
             _party.Add(player);
-            OpenTownMenu();
+            //OpenTownMenu();
+            TestMethod();
+            PlayGame();
         }
         private static void InitializeAssets()
         {
+            if(_firstLoad)
+            {
+                try
+                {
+                    Assets.LoadItems();
+                    _firstLoad = false;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
             _currentGold = 0;
             _currentXp = 0;
             _gameDay = 1;
             _inventory = new();
+
+            
+            GetStartingLocation();
         }
 
         private static Hero CreatePlayer()
         {
-            Armor startingArmor = new Armor("T-Shirt", 1, 0, 1);
-            Weapon startingWeapon = new Weapon("KeyBlade", 0, 1, 1);
+            Armor startingArmor = new Armor("TShirt", 1, 0, 1);
+            Weapon startingWeapon = new Weapon("KeyBlade", 1, 2, 0);
             Hero? playerHero = null;
             string heroName = "";
             
@@ -54,7 +94,7 @@ namespace FightRPG
             while (playerHero == null)
             {
                 Console.Write("> ");
-                string inputName = Console.ReadLine();
+                string? inputName = Console.ReadLine();
                 inputName = inputName.Trim();
 
                 if (string.IsNullOrEmpty(inputName)) 
@@ -77,8 +117,44 @@ namespace FightRPG
             return playerHero;
         }
 
-    
+        private static void GetStartingLocation()
+        {
+            Location? location = null;
+            try
+            {
+                location = (Location)Assets.GetObjectById(1);
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
+            if (location != null)
+            {
+                _currentLocation = location;
+            }
+            Console.WriteLine(location?.Id);
+        }
+
+        private static void PlayGame()
+        {
+            try
+            {
+                _currentLocation.ChooseAction();
+
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                // Maybe set CurrentLocation to a default?
+            }
+
+            ClearScreen();
+            Status();
+            ClearScreen(4);
+            PlayGame();
+        }
+
+    
+        /*
         private static void OpenMenu()
         {
 
@@ -177,7 +253,7 @@ namespace FightRPG
             OpenMenu();
         }
 
-        private static Fight CreateFight(int NumberOfEnemies = 1)
+        private static Fight CreateFight(int NumberOfEnemies = 2)
         {
             HashSet<Monster> enemies = new HashSet<Monster>();
             
@@ -219,7 +295,7 @@ namespace FightRPG
             }
             _gameDay++;
         }
-
+        */
 
         // Controls
 
@@ -246,17 +322,23 @@ namespace FightRPG
             int numOfPages = arg.Length / 8 + 1;
             while (!hasSelected)
             {
+                if (numOfPages > 1)
+                {
+                    Console.WriteLine("9: Previous");
+                    Console.WriteLine("0: Next");
+                    Console.WriteLine();
+                }
                 // display the options (8 max or to end of list)
                 for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
                 {
                     Console.WriteLine($"{i + 1}: {arg[i + rollingIndex].Name}");
                 }
 
-                Console.WriteLine("9: Previous");
-                Console.WriteLine("0: Next");
+                int maxInput = 8;
+                if (arg.Length - rollingIndex < 8) { maxInput = arg.Length - rollingIndex; }
 
                 int input = -1;
-                while (input < 0 || input > 10)
+                while (input < 0 || (input > maxInput && input != 9))
                 {
                     input = GetInput();
                 }
@@ -294,17 +376,24 @@ namespace FightRPG
             int numOfPages = arg.Length / 8 + 1;
             while (!hasSelected)
             {
-                // display the options (8 max or to end of list)
+
+                if (numOfPages > 1)
+                {
+                    Console.WriteLine("9: Previous");
+                    Console.WriteLine("0: Next");
+                    Console.WriteLine();
+                }
+
                 for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
                 {
                     Console.WriteLine($"{i + 1}: {arg[i + rollingIndex]}");
                 }
 
-                Console.WriteLine("9: Previous");
-                Console.WriteLine("0: Next");
+                int maxInput = 8;
+                if (arg.Length - rollingIndex < 8) { maxInput = arg.Length - rollingIndex; }
 
                 int input = -1;
-                while (input < 0 || input > 10)
+                while (input < 0 || (input > maxInput && input != 9) )
                 {
                     input = GetInput();
                 }
@@ -330,18 +419,128 @@ namespace FightRPG
                     optionIndex = input + rollingIndex - 1;
                 }
             }
+
             string choice = arg[optionIndex];
             return choice;
 
         }
 
+        public static int GetPlayerChoice(int[] arg, string template )
+        {
+            bool hasSelected = false;
+            int optionIndex = -1;
+            int rollingIndex = 0;
+            int numOfPages = arg.Length / 8 + 1;
+
+            while (!hasSelected)
+            {
+                if (numOfPages > 1)
+                {
+                    Console.WriteLine("9: Previous");
+                    Console.WriteLine("0: Next");
+                    Console.WriteLine();
+                }
+                // display the options (8 max or to end of list)
+                for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
+                {
+                    try
+                    {
+                        GameObject? obj = Assets.GetObjectById(arg[i + rollingIndex]);
+                        Console.WriteLine($"{i + 1}: {template}"); //ex Template "{obj.Name}" "{obj.Name} {(cast)obj.Value}"
+                    } catch (Exception ex)
+                    {
+                        Console.WriteLine($"{i + 1}: Failed to Load - {ex.Message}");
+                    }
+                }
+
+                int maxInput = 8;
+                if (arg.Length - rollingIndex < 8) { maxInput = arg.Length - rollingIndex; }
+
+                int input = -1;
+                while (input < 0 || (input > maxInput && input != 9))
+                {
+                    input = GetInput();
+                }
+                Console.WriteLine();
+
+                if (input == 0)
+                {
+                    if (rollingIndex + 8 < arg.Length)
+                    {
+                        rollingIndex += 8;
+                    }
+                }
+                else if (input == 9)
+                {
+                    if (rollingIndex - 8 >= 0)
+                    {
+                        rollingIndex -= 8;
+                    }
+                }
+                else
+                {
+                    hasSelected = true;
+                    optionIndex = input + rollingIndex - 1;
+                }
+            }
+            int choice = arg[optionIndex];
+            return choice;
+
+        }
+
+
+
+
         public static void MoveLocation(Location newLocation, Location prevLocation)
         {
             newLocation.TravelTo(prevLocation);
             _currentLocation = newLocation;
-            _currentLocation.ChooseAction();
+            //_currentLocation.ChooseAction();
         }
 
+        // Information and Utility Methods
+
+        public static void ClearScreen(int n = 100)
+        {
+            int position = Console.GetCursorPosition().Top;
+
+
+
+            if(n > position) { n = position; }
+
+            for (int i = 0; i < n; i++)
+            {
+                Console.WriteLine();
+            }
+        }
+
+        public static void Status()
+        {
+            Console.Write(_currentLocation.Name);
+
+            Console.Write($" Day {_gameDay}");
+
+  
+        }
+        public static void DisplayStats()
+        {
+            foreach(KeyValuePair<string, int> pair in _statistics)
+            {
+                Console.WriteLine($"{pair.Key}: {pair.Value}");
+            }
+        }
+
+        public static void OpenInventory()
+        {
+
+        }
+
+        private static void TestMethod()
+        {
+            Fight? obj = Assets.GetObjectById<Fight>(5);
+           Console.WriteLine($"Testing Generic Method {obj}");
+            
+        }
         
     }
 }

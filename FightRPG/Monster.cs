@@ -15,7 +15,7 @@ namespace FightRPG
         protected int _bestiaryIndex;
         protected string _nickname;
         public string Nickname { get { return _nickname; } }
-
+        public new string Name { get { return _nickname + " " + _name; } }
         public string FullName { get { return _nickname + " " + _name; } }
         protected int _xpPrize = 1;
         public int XpPrize { get { return _xpPrize; } }
@@ -54,6 +54,7 @@ namespace FightRPG
             SetBonusStats(level);
             SetCurrentHealthToMax();
             _nickname = Assets.GetRandomAdjective();
+            Assets.AddMonster(Id, this);
               
         }
 

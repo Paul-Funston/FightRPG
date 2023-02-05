@@ -8,22 +8,86 @@ namespace FightRPG
 {
     public class Fight : Location
     {
-        private HashSet<Hero> _activeParty;
-        private HashSet<Monster> _enemies;
-        public HashSet<Monster> Enemies { get { return _enemies.ToHashSet(); } }
-        private bool _isActive = true;
-        public bool IsActive { get { return _isActive; } }
+        //private HashSet<Hero> _activeParty;
+        private int[] _heroIds;
+        //private HashSet<Monster> _enemies;
+        private int[] _monsterIds;
+       // public HashSet<Monster> Enemies { get { return _enemies.ToHashSet(); } }
+        //private bool _isActive = true;
+        //public bool IsActive { get { return _isActive; } }
 
-        private bool _wasFightWon = false;
+        //private bool _wasFightWon = false;
         private int _turnCount = 0;
+        private bool _isPlayersTurn;
+        //public int TurnCount { get { return _turnCount; } }
 
-        private int _goldReward;
-        public int GoldReward { get { return _goldReward; } }
+        //private int _goldReward;
+        //public int GoldReward { get { return _goldReward; } }
 
-        private int _xpReward;
-        public int XpReward { get { return _xpReward; } }
+        //private int _xpReward;
+        //public int XpReward { get { return _xpReward; } }
 
+        public new void ChooseAction()
+        {
+            // if its PlayerTurn - player gets to choose an action // base.ChooseAction() 
+                // else  the monsters get to attack MonsterTurn();
+            if (_isPlayersTurn)
+            {
+                try
+                {
+                    base.ChooseAction();
+                } catch(Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            } else
+            {
+                TakeTurn(_monsterIds);
+                //MonsterTurn();
+            }
 
+        }
+
+        private new void Travel() 
+        {
+            int odds = Assets.Rng % 4;
+            if (odds == 0)
+            {
+                Console.WriteLine("You failed to escape");
+                _isPlayersTurn = false;
+            } else
+            {
+                base.Travel();
+            }
+        }
+
+        private void TakeTurn(int[] actingTeam)
+        {
+            foreach(int id in actingTeam)
+            {
+                GameCharacter? activeCharacter = Assets.GetCharacterById(id);
+                try
+                {
+                    if(activeCharacter.CanAct)
+                    {
+                        activeCharacter.ChooseAction();
+
+                    }
+                } catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            // for each hero in party take their action
+        }
+        private void PlayRound()
+        {
+            TakeTurn(_heroIds);
+        }
+   
+ 
+
+        /*
         
         private void CalculateRewards()
         {
@@ -259,7 +323,10 @@ namespace FightRPG
 
             return SelectTarget();
         }
-
+        private void TakeTurn()
+        {
+            Console.WriteLine("Coming Soon");
+        }
         public Fight(HashSet<Hero> party, HashSet<Monster> enemies) : base("Fight")
         {
             if (party.Count > 0 && enemies.Count > 0)
@@ -271,8 +338,39 @@ namespace FightRPG
                 throw new Exception("Cannot start a fight without characters on both sides.");
             }
 
+            _actionsAvailable.Add("Fight", TakeTurn );
+            _actionsAvailable.Remove("Travel");
+            _actionsAvailable.Add("Escape", Travel);
+            
 
 
+
+        }
+        */
+        public Fight(int[] party, int[] enemies) : base("Fight")
+        {
+            if (party.Length < 1 || enemies.Length < 1)
+            {
+                throw new Exception("Cannot start a fight without characters on both sides.");
+            } else
+            {
+                _heroIds = party;
+                _monsterIds = enemies;
+            }
+
+            if (Assets.Rng % 10 == 0)
+            {
+                _isPlayersTurn = false;
+            } else
+            {
+                _isPlayersTurn = true;
+            }
+
+            _actionsAvailable.Add("Fight", PlayRound);
+            _actionsAvailable.Remove("Travel");
+            _actionsAvailable.Add("Escape", Travel);
+            _actionsAvailable.Remove("Inventory");
+            Assets.AddFight(Id, this);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace FightRPG
         {
             EquipItem(startingArmor);
             EquipItem(startingWeapon);
-
+            Assets.AddHero(Id, this);
         }
     }
 }

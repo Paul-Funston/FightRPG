@@ -12,7 +12,7 @@ namespace FightRPG
 
         public Weapon(string name, int value, int strength, int defence) : base(name, value, strength, defence)
         {
-            
+            Assets.AddWeapon(Id, this);
         }
     }
 }

@@ -14,7 +14,6 @@ namespace FightRPG
         private int _defence;
         public int Defence { get { return _defence; } }
 
-        public Equipment() { }
         public Equipment(string name, int value, int strength, int defence) : base(name, value)
         {
             _strength= strength;
