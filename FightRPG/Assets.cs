@@ -57,12 +57,16 @@ namespace FightRPG
         {
             _allAbilities.Add(id, obj);
         }
+        public static Ability Attack = new Ability("Attack");
+        public static int _basicAttackId = Attack.Id;
 
         // Locations
         private static Dictionary<int, Location> _allLocations = new();
         private static Dictionary<int, Location.Dungeon> _allDungeons = new();
         private static Dictionary<int, Location.Shop> _allShops = new();
 
+        public static Location Town = new Location("Town");
+        public static int _startingTownId = Town.Id;
         public static void AddLocation(int id, Location obj)
         {
             _allLocations.Add(id, obj);
@@ -87,8 +91,9 @@ namespace FightRPG
             try
             {
                 return (T)_gameObjects[id];
-            } catch
+            } catch (Exception ex)
             {
+                //Console.WriteLine(ex.Message);
                 return null;
             }
         }
@@ -180,10 +185,10 @@ namespace FightRPG
             Console.WriteLine("Running LoadItems");
             //InitializeAdjectives();
             //InitializeAdverbs();
+            InitializeAbilities();
             InitializeLocations();
             InitializeWeapons();
             InitializeArmor();
-            InitializeAbilities();
         }
         
 
@@ -329,8 +334,8 @@ namespace FightRPG
         {
             HashSet<Location> locations = new HashSet<Location>();
 
-            Location Town = new Location("Town");
-            Console.WriteLine($"Town Id {Town.Id}");
+            
+            
 
             Location.Shop WeaponShop = new Location.Shop("Weapon Shop");
             Location.Shop ArmorShop = new Location.Shop("Armor Shop");

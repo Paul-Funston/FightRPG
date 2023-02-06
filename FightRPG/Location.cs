@@ -37,7 +37,7 @@ namespace FightRPG
         }
         */
 
-        protected void Travel()
+        protected virtual void Travel()
         {
             if (_locationsAvailable.Count == 0)
             {
@@ -267,7 +267,7 @@ namespace FightRPG
 
             public Dungeon(string name) : base(name)
             {
-                _actionsAvailable.Add("Fight", GetFight);
+                _actionsAvailable.Add("Fight Monsters", GetFight);
                 _inhabitants.Add(Goblin, 99);
                 _inhabitants.Add(Bear, 5);
                 _inhabitants.Add(Snake, 20);

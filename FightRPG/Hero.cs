@@ -15,12 +15,12 @@ namespace FightRPG
         
         public Weapon EquippedWeapon { get { return _equippedWeapon; } }
 
-        public new int GetEffectiveStrength()
+        public override int GetEffectiveStrength()
         {
             return base.GetEffectiveStrength() + _equippedArmor.Strength + _equippedWeapon.Strength;
         }
 
-        public new int GetEffectiveDefence()
+        public override int GetEffectiveDefence()
         {
             return base.GetEffectiveDefence() + _equippedArmor.Defence + _equippedWeapon.Defence;
         }
@@ -44,9 +44,15 @@ namespace FightRPG
         {
 
         }
-        
 
-        private new int GetTarget()
+        protected override void AttackEnemy()
+        {
+            int targetId = GetTarget();
+
+            Game.CharacterUseAbility(this, new Ability("Testing Ability").Id, targetId);
+        }
+
+        protected override int GetTarget()
         {
             int targetId = -1;
             while (targetId < 0)

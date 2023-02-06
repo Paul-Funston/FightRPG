@@ -15,7 +15,7 @@ namespace FightRPG
         protected int _bestiaryIndex;
         protected string _nickname;
         public string Nickname { get { return _nickname; } }
-        public new string Name { get { return _nickname + " " + _name; } }
+        public override string Name { get { return _nickname + " " + _name; } }
         public string FullName { get { return _nickname + " " + _name; } }
         protected int _xpPrize = 1;
         public int XpPrize { get { return _xpPrize; } }
@@ -45,9 +45,9 @@ namespace FightRPG
 
         
 
-        public new string Examine()
+        public override string Examine()
         {
-            return $"The {FullName} " + base.Examine();
+            return $"The {Name} " + base.Examine();
         }
 
         public Monster(string name, int level, int health, int strength, int defence, int bestiaryIndex) : base(name, level, health, strength, defence)

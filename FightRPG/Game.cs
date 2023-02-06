@@ -14,11 +14,18 @@ namespace FightRPG
     {
         private static int _gameDay = 1;
         private static int _daysPrevious = 0;
+        private static int _battlesWon = 0;
+        private static int _totalWins = 0;
+        private static int _timesDefeated = 0;
+        private static Hero? _playerHero = null;
+        public static GameObject? _obj = _playerHero;
+
+        private static string? _heroName = null;
         public static int GameDay { get { return _gameDay; } }
         private static bool _firstLoad = true;
         private static Dictionary<Item, int> _inventory = new Dictionary<Item, int>();
         private static HashSet<Hero> _party = new();
-        public static string OptionItem = "{arg[i + rollingIndex]}";
+        
         private static int _currentGold = 0;
         private static int _currentXp = 0;
         private static Location _currentLocation;
@@ -26,10 +33,11 @@ namespace FightRPG
         private static Dictionary<string, int> _statistics = new Dictionary<string, int>()
         {
             {"Days This Life", _gameDay },
-            {"Battles Won This Life", 0 },
+            {"Battles Won This Life", _battlesWon },
+            {"Times Defeated", _timesDefeated },
             {"Total Days Played", _gameDay + _daysPrevious },
-            {"Total Battles Won", 0 },
-            {"Times Defeated", 0 },
+            {"Total Battles Won", _totalWins },
+            
         };
 
         public static int[] GetActiveParty()
@@ -49,16 +57,20 @@ namespace FightRPG
         {
             InitializeAssets();
             
-            Hero player = CreatePlayer();
-            _party.Add(player);
+            
             //OpenTownMenu();
             TestMethod();
+
+            Console.WriteLine($"Good Luck on your adventure {_playerHero.Name}!");
+
             PlayGame();
         }
         private static void InitializeAssets()
         {
-            if(_firstLoad)
+            _party = new();
+            if (_firstLoad)
             {
+                GetHeroName();
                 try
                 {
                     Assets.LoadItems();
@@ -70,70 +82,79 @@ namespace FightRPG
                 }
             }
 
+            CreatePlayer();
+
+
             _currentGold = 0;
             _currentXp = 0;
             _gameDay = 1;
             _inventory = new();
 
             
-            GetStartingLocation();
+            SetToStartingLocation();
         }
-
-        private static Hero CreatePlayer()
+        private static void GetHeroName()
         {
-            Armor startingArmor = new Armor("TShirt", 1, 0, 1);
-            Weapon startingWeapon = new Weapon("KeyBlade", 1, 2, 0);
-            Hero? playerHero = null;
-            string heroName = "";
-            
-            // skip name for testing Remove this line to name player
-            playerHero = new Hero("Test", 1, 20, 5, 5, startingArmor, startingWeapon);
-
+            _heroName = null;
             Console.WriteLine("Welcome to the game!");
-            Console.WriteLine("Please Name your Hero");
-
-            while (playerHero == null)
+            while(_heroName == null)
             {
+                Console.WriteLine("Please Name your Hero");
+
                 Console.Write("> ");
                 string? inputName = Console.ReadLine();
                 inputName = inputName.Trim();
 
-                if (string.IsNullOrEmpty(inputName)) 
-                { 
-                    continue; 
+                if (string.IsNullOrEmpty(inputName))
+                {
+                    continue;
                 }
 
-                heroName = inputName.Substring(0, 1).ToUpper() + inputName.Substring(1);
+                _heroName = inputName.Substring(0, 1).ToUpper() + inputName.Substring(1);
 
+            }
+
+        }
+        private static void CreatePlayer()
+        {
+            Armor startingArmor = new Armor("TShirt", 1, 0, 1);
+            Weapon startingWeapon = new Weapon("KeyBlade", 1, 2, 0);
+            
+            Console.WriteLine("Welcome to the game!");
+            Console.WriteLine("Please Name your Hero");
+
+            while (_playerHero == null)
+            {
                 try
                 {
-                    playerHero = new Hero(heroName, 1, 20, 5, 5, startingArmor, startingWeapon);
+                    _playerHero = new Hero(_heroName, 1, 20, 5, 5, startingArmor, startingWeapon);
                 } catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
+
+                if (_playerHero == null) { GetHeroName(); }
             }
 
-            Console.WriteLine($"Good Luck on your adventure {playerHero.Name}!");
-            return playerHero;
+            _party.Add(_playerHero);
+            _obj = _playerHero;
+            
         }
 
-        private static void GetStartingLocation()
+        private static void SetToStartingLocation()
         {
+            
             Location? location = null;
-            try
-            {
-                location = (Location)Assets.GetObjectById(1);
-            } catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            location = Assets.GetObjectById<Location>(Assets._startingTownId);
+            
 
-            if (location != null)
+            if (location == null)
+            {
+                Console.WriteLine("Could not Find Starting Town.");
+            } else
             {
                 _currentLocation = location;
             }
-            Console.WriteLine(location?.Id);
         }
 
         private static void PlayGame()
@@ -148,7 +169,7 @@ namespace FightRPG
                 // Maybe set CurrentLocation to a default?
             }
 
-            ClearScreen();
+            //ClearScreen();
             Status();
             ClearScreen(4);
             PlayGame();
@@ -313,7 +334,7 @@ namespace FightRPG
 
             try
             {
-                GameCharacter? defender = Assets.GetObjectById<GameCharacter>(defenderId);
+                GameCharacter defender = Assets.GetObjectById<GameCharacter>(defenderId);
                 int defenderDefence = defender.GetEffectiveDefence();
                 int damage = attackerStrength - defenderDefence;
                 if (damage < 1) { damage = 1; } // minimum 1 damage every attack
@@ -327,8 +348,8 @@ namespace FightRPG
         }
         private static void SendDamageMessage(GameCharacter attacker, GameCharacter defender, int damage)
         {
-            Console.Write($"{attacker.Name} attacks {Assets.GetRandomAdverb}.");
-            Console.WriteLine($"{defender.Name} takes {damage} damage.");
+            Console.Write($"{attacker.Name} attacks {defender.Name} {Assets.GetRandomAdverb()}.");
+            Console.WriteLine($" {defender.Name} takes {damage} damage.");
             int currentHealth = defender.CurrentHealth;
             int maxHealth = defender.GetMaxHealth();
 
@@ -350,7 +371,13 @@ namespace FightRPG
             try
             {
                 int[] options = ((Fight)_currentLocation).MonstersWithHealthIds;
-                return GetPlayerChoice(options, "{obj.Name}");
+                
+                if (options.Length == 1) 
+                { return options[0]; } else
+                {
+                    return GetPlayerChoice(options);
+
+                }
 
             } catch (Exception ex)
             {
@@ -365,6 +392,7 @@ namespace FightRPG
             int choice = -1;
             try
             {
+                
                 int[] options = ((Fight)_currentLocation).HeroesWithHealthIds;
                 choice = options[0];
             } catch (Exception ex)
@@ -386,12 +414,36 @@ namespace FightRPG
 
         public static void FightWon(Fight fight)
         {
+            if (fight.PreviousLocation != null)
+            {
+                _currentLocation = fight.PreviousLocation;
+            } else
+            {
+                SetToStartingLocation();
+            }
 
+            _battlesWon++;
+            _totalWins++;
+            GetRewards(fight);
         }
 
         public static void FightLost()
         {
+            HealParty();
+            _daysPrevious += _gameDay;
+            _timesDefeated++;
 
+            Console.WriteLine("You have been defeated...");
+            Console.WriteLine("but is it the end?");
+            Console.WriteLine("Will you try again? Maybe it will be easier.");
+            // handle Stat Trackin and reincarnation
+            GameStart();
+        }
+
+        private static void GetRewards(Fight fight)
+        {
+            // _currentGold += fight.GoldReward;
+            // _currentXp += fight.XpReward;
         }
         // Controls
 
@@ -520,14 +572,13 @@ namespace FightRPG
             return choice;
 
         }
-
-        public static int GetPlayerChoice(int[] arg, string template )
+        public static int GetPlayerChoice(int[] arg )
         {
             bool hasSelected = false;
             int optionIndex = -1;
             int rollingIndex = 0;
             int numOfPages = arg.Length / 8 + 1;
-
+            
             while (!hasSelected)
             {
                 if (numOfPages > 1)
@@ -539,10 +590,12 @@ namespace FightRPG
                 // display the options (8 max or to end of list)
                 for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
                 {
+                    GameObject obj = Assets.GetObjectById(arg[i + rollingIndex]);
                     try
                     {
-                        GameObject? obj = Assets.GetObjectById(arg[i + rollingIndex]);
-                        Console.WriteLine($"{i + 1}: {template}"); //ex Template "{obj.Name}" "{obj.Name} {(cast)obj.Value}"
+                       
+                        Console.Write($"{i + 1}: "); //ex Template "{obj.Name}" "{obj.Name} {(cast)obj.Value}"
+                        Console.WriteLine(Format(obj));
                     } catch (Exception ex)
                     {
                         Console.WriteLine($"{i + 1}: Failed to Load - {ex.Message}");
@@ -584,7 +637,10 @@ namespace FightRPG
 
         }
 
-
+        public static string Format(GameObject obj)
+        {
+            return $"{obj.Name}";
+        }
 
 
         public static void MoveLocation(Location newLocation, Location prevLocation)
@@ -648,9 +704,13 @@ namespace FightRPG
 
         private static void TestMethod()
         {
-           //Fight? obj = Assets.GetObjectById<Fight>(5);
-           //Console.WriteLine($"Testing Generic Method {obj}");
-            
+            //Fight? obj = Assets.GetObjectById<Fight>(5);
+            //Console.WriteLine($"Testing Generic Method {obj}");
+            string colour = "black";
+            string Format = $"{colour}";
+            string output = $"{Format}";
+            Console.WriteLine(output);
+
         }
         
     }

@@ -14,6 +14,11 @@ namespace FightRPG
         private int[] _monsterIds;
         private int _turnCount = 0;
         private bool _isPlayersTurn;
+        private int _goldReward;
+        public int GoldReward { get { return _goldReward; } }
+
+        private int _xpReward;
+        public int XpReward { get { return _xpReward; } }
 
         private int _numOfHeroesWithHealth = 0;
         private int[] _heroesWithHealthIds = new int[0];
@@ -23,44 +28,35 @@ namespace FightRPG
         public int[] HeroesWithHealthIds { get { return _heroesWithHealthIds;} }
         private void SetHealthyCombatants()
         {
-            SetHealthyMembersOfTeam(_heroIds, _numOfHeroesWithHealth, _heroesWithHealthIds);
-            SetHealthyMembersOfTeam(_monsterIds, _numOfMonstersWithHealth, _monstersWithHealthIds);
-        }
-        private void SetHealthyMembersOfTeam(int[] teamIds, int numOfHealthyMembersToSet, int[] healthyMembersToSet )
-        {
             List<int> healthyMembers = new List<int>();
 
-            foreach(int id in teamIds)
+            foreach (int id in _heroIds)
             {
                 GameCharacter? c = Assets.GetCharacterById(id);
-                if( c != null && c.CurrentHealth > 0 )
+                if (c != null && c.CurrentHealth > 0)
                 {
                     healthyMembers.Add(id);
                 }
             }
+            _heroesWithHealthIds = healthyMembers.ToArray();
+            _numOfHeroesWithHealth = _heroesWithHealthIds.Length;
 
-            healthyMembersToSet = healthyMembers.ToArray();
-            numOfHealthyMembersToSet = healthyMembersToSet.Length;
+            healthyMembers.Clear();
+            foreach (int id in _monsterIds)
+            {
+                GameCharacter? c = Assets.GetCharacterById(id);
+                if (c != null && c.CurrentHealth > 0)
+                {
+                    healthyMembers.Add(id);
+                }
+            }
+            _monstersWithHealthIds = healthyMembers.ToArray();
+            _numOfMonstersWithHealth = _monstersWithHealthIds.Length;
 
         }
+        
 
-
-        // public HashSet<Monster> Enemies { get { return _enemies.ToHashSet(); } }
-        //private bool _isActive = true;
-        //public bool IsActive { get { return _isActive; } }
-
-        //private bool _wasFightWon = false;
-
-
-        //public int TurnCount { get { return _turnCount; } }
-
-        //private int _goldReward;
-        //public int GoldReward { get { return _goldReward; } }
-
-        //private int _xpReward;
-        //public int XpReward { get { return _xpReward; } }
-
-        public new void ChooseAction()
+        public override void ChooseAction()
         {
             Console.WriteLine($"Fight Turn {++_turnCount}");
 
@@ -68,6 +64,7 @@ namespace FightRPG
             // else  the monsters get to attack MonsterTurn();
             if (_isPlayersTurn)
             {
+                _isPlayersTurn= false;
                 try
                 {
                     base.ChooseAction();
@@ -77,6 +74,7 @@ namespace FightRPG
                 }
             } else
             {
+                _isPlayersTurn= true;
                 TakeTurn(_monsterIds);
                 //MonsterTurn();
             }
@@ -107,7 +105,17 @@ namespace FightRPG
                 {
                     if(activeCharacter.CanAct)
                     {
-                        activeCharacter.ChooseAction();
+                        if(Assets.GetObjectById<Hero>(id) == null)
+                        {
+                            Monster activeMonster = (Monster)activeCharacter; 
+                            Console.WriteLine($"{activeCharacter.Name} is deciding what to do...");
+                            activeMonster.ChooseAction();
+                        } else
+                        {
+                            Hero activeHero = (Hero)activeCharacter;
+                            Console.WriteLine($"{activeCharacter.Name} is deciding what to do...");
+                            activeHero.ChooseAction();
+                        }
                     }
                 } catch (Exception ex)
                 {
@@ -154,18 +162,20 @@ namespace FightRPG
             }
 
         }
+        private void CalculateRewards()
+        {
+            foreach (int monsterId in _monsterIds)
+            {
+                Monster enemy = Assets.GetMonsterById(monsterId);
+                _goldReward += enemy.GoldPrize;
+                _xpReward += enemy.XpPrize;
+
+            }
+        }
 
         /*
         
-        private void CalculateRewards()
-        {
-            foreach (Monster enemy in _enemies)
-            {
-                _goldReward += enemy.GoldPrize;
-                _xpReward += enemy.XpPrize;
-                
-            }
-        }
+       
 
         public bool EnterFight()
         {
@@ -419,6 +429,7 @@ namespace FightRPG
         {
             if (party.Length < 1 || enemies.Length < 1)
             {
+                Console.WriteLine($"Party: {party.Length}  Enemy: {enemies.Length}");
                 throw new Exception("Cannot start a fight without characters on both sides.");
             } else
             {
@@ -433,7 +444,7 @@ namespace FightRPG
             {
                 _isPlayersTurn = true;
             }
-
+            CalculateRewards();
             _actionsAvailable.Add("Fight", PlayRound);
             _actionsAvailable.Remove("Travel");
             _actionsAvailable.Add("Escape", Travel);

@@ -13,20 +13,20 @@ namespace FightRPG
         protected int _level;
         public int Level { get; set; }
 
-        protected int _baseStrength;
+        protected readonly int _baseStrength;
         public int BaseStrength { get { return _baseStrength; } }
         protected int _bonusStrength = 0;
 
-        protected int _baseDefence;
+        protected readonly int _baseDefence;
         public int BaseDefence { get { return _baseDefence; } }
         protected int _bonusDefence = 0;
 
-        protected int _baseHealth;
+        protected readonly int _baseHealth;
         public int BaseHealth { get { return _baseHealth; } }
 
         protected int _bonusHealth = 0;
         
-        private int _currentHealth;
+        protected int _currentHealth;
         public int CurrentHealth { get { return _currentHealth; } }
 
         private bool _canAct = true;
@@ -38,12 +38,12 @@ namespace FightRPG
 
         private Dictionary<int, bool> _abilitiesAvailable = new();
 
-        public int GetEffectiveStrength()
+        public virtual int GetEffectiveStrength()
         {
             return _baseStrength + _bonusStrength;
         }
 
-        public int GetEffectiveDefence()
+        public virtual int GetEffectiveDefence()
         {
             return _baseDefence + _bonusDefence;
         }
@@ -83,19 +83,19 @@ namespace FightRPG
         }
 
         
-        public string Examine()
+        public virtual string Examine()
         {
-            return $"{Name} is level {_level}, has {CurrentHealth}/{GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
+            return $" is level {_level}, has {CurrentHealth}/{GetMaxHealth()} Health, {GetEffectiveStrength()} Strength, and {GetEffectiveDefence()} Defence.";
         }
 
-        protected void AttackEnemy()
+        protected virtual void AttackEnemy()
         {
             int targetId = GetTarget();
 
-            Game.CharacterUseAbility(this, new Ability("Test").Id, targetId);
+            Game.CharacterUseAbility(this, Assets._basicAttackId, targetId);
         }
 
-        protected int GetTarget()
+        protected virtual int GetTarget()
         {
             int targetId = -1;
             while (targetId < 0)

@@ -12,7 +12,7 @@ namespace FightRPG
         public int Id { get { return _id; } }
 
         protected string _name;
-        public string Name { get { return _name; } }
+        public virtual string Name { get { return _name; } }
 
         protected Dictionary<string, Action> _actionsAvailable = new();
         //public Dictionary<string, Action> GetActionsAvailable { get { return new Dictionary<string, Action>(_actionsAvailable); } }
@@ -21,7 +21,7 @@ namespace FightRPG
         {
             return _actionsAvailable.Keys.ToArray();
         }
-        public void ChooseAction()
+        public virtual void ChooseAction()
         {
             if (_actionsAvailable.Count == 0) 
             {
