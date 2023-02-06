@@ -8,6 +8,8 @@ namespace FightRPG
 {
     public class Fight : Location
     {
+        private int _previousLocationId;
+        public int PreviousLocationId { get { return _previousLocationId; } }
         //private HashSet<Hero> _activeParty;
         private int[] _heroIds;
         //private HashSet<Monster> _enemies;
@@ -425,8 +427,9 @@ namespace FightRPG
 
         }
         */
-        public Fight(int[] party, int[] enemies) : base("Fight")
+        public Fight(int[] party, int[] enemies, int previousLocationId) : base("Fight")
         {
+            _previousLocationId = previousLocationId;
             if (party.Length < 1 || enemies.Length < 1)
             {
                 Console.WriteLine($"Party: {party.Length}  Enemy: {enemies.Length}");

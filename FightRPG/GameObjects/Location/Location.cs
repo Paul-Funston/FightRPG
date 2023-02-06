@@ -13,14 +13,18 @@ namespace FightRPG
         //public Dictionary<string, Action> GetActionsAvailable { get { return new Dictionary<string, Action>(_actionsAvailable); } }
 
         protected HashSet<Location> _locationsAvailable = new();
+        protected HashSet<int> _connectedLocationsById= new();
         private Location[] _locationsAvailableArray { get { return _locationsAvailable.ToArray(); } }
 
-        private Location? _previousLocation = null;
-        public Location? PreviousLocation { get { return _previousLocation; } }
+        //private Location? _previousLocation = null;
+        private int _previousLocationId;
+        public int PreviousLocationId { get { return _previousLocationId; } }
+        //public Location? PreviousLocation { get { return _previousLocation; } }
 
         public int AddConnection(Location l)
         {
             _locationsAvailable.Add(l);
+            _connectedLocationsById.Add(l.Id);
             return _locationsAvailable.Count();
         }
 
@@ -41,30 +45,24 @@ namespace FightRPG
         {
             if (_locationsAvailable.Count == 0)
             {
-                if (_previousLocation != null)
-                {
-
-                    Game.MoveLocation(_previousLocation, this);
-                    _previousLocation = null;
-                } else
-                {
-                    throw new Exception("No locations found to travel to.");
-                }
-
+                Console.WriteLine("Dead end found, returning to Start.");
+                Game.SetToStartingLocation();
             } else if(_locationsAvailable.Count == 1) 
             {
-                Game.MoveLocation(_locationsAvailable.First(), this);
+                Game.MoveLocation(_locationsAvailable.First().Id);
             } else
             {
-                Location choice = Game.PlayerChooseLocation(_locationsAvailableArray);
-                Game.MoveLocation(choice, this);
+                
+                //Location choice = Game.PlayerChooseLocation(_locationsAvailableArray);
+                int choice = Game.PlayerChoosesObjectByName(_connectedLocationsById.ToArray());
+                Game.MoveLocation(choice);
 
             }
         }
 
-        public Location TravelTo(Location travelingFrom)
+        public Location TravelTo(int travelingFromId)
         {
-            _previousLocation = travelingFrom;
+            _previousLocationId = travelingFromId;
             return this;
         }
 
@@ -231,11 +229,11 @@ namespace FightRPG
             private void StartFight(Fight fight)
             {
                 // Special Travel option
-                Game.MoveLocation(fight, this);
+                Game.MoveLocation(fight.Id);
             }
             private Fight CreateFight(int[] partyIds, int[] enemyIds)
             {
-                return new Fight(partyIds, enemyIds);
+                return new Fight(partyIds, enemyIds, Id);
 
             }
 

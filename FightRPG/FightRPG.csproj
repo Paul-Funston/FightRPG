@@ -9,8 +9,6 @@
 
   <ItemGroup>
     <Folder Include="GameObjects\Location\" />
-    <Folder Include="GameObjects\Character\" />
-    <Folder Include="GameObjects\Item\" />
   </ItemGroup>
 
 </Project>

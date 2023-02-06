@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using FightRPG;
 
 namespace FightRPG
 {
@@ -59,7 +60,7 @@ namespace FightRPG
             
             
             //OpenTownMenu();
-            TestMethod();
+            //TestMethod();
 
             Console.WriteLine($"Good Luck on your adventure {_playerHero.Name}!");
 
@@ -375,8 +376,9 @@ namespace FightRPG
                 if (options.Length == 1) 
                 { return options[0]; } else
                 {
-                    return GetPlayerChoice(options);
-
+                    return PlayerChoosesObjectByName(options);
+                    //return GetPlayerChoice(options);
+                    // return PlayerChooseString();
                 }
 
             } catch (Exception ex)
@@ -414,9 +416,10 @@ namespace FightRPG
 
         public static void FightWon(Fight fight)
         {
-            if (fight.PreviousLocation != null)
+            Location? previousLocation = Assets.GetObjectById<Location>(fight.PreviousLocationId);
+            if (previousLocation != null)
             {
-                _currentLocation = fight.PreviousLocation;
+                _currentLocation = previousLocation;
             } else
             {
                 SetToStartingLocation();
@@ -464,6 +467,19 @@ namespace FightRPG
 
         public static Location PlayerChooseLocation(Location[] arg)
         {
+            Dictionary<string, Location> locationNames = new();
+
+            foreach(Location location in arg)
+            {
+                locationNames.Add(location.Name, location);
+            }
+
+            string[] locationNamesArray = locationNames.Keys.ToArray();
+            string ChosenName = PlayerChoosesString(locationNamesArray);
+
+            Location choice = locationNames[ChosenName];
+            return choice;
+            /*
             bool hasSelected = false;
             int optionIndex = -1;
             int rollingIndex = 0;
@@ -512,8 +528,11 @@ namespace FightRPG
                     optionIndex = input + rollingIndex - 1;
                 }
             }
-            Location choice = arg[optionIndex];
+             Location choice = arg[optionIndex];
             return choice;
+            */
+
+
         }
 
         public static string PlayerChoosesString(string[] arg)
@@ -572,8 +591,11 @@ namespace FightRPG
             return choice;
 
         }
-        public static int GetPlayerChoice(int[] arg )
+        /*
+        public static int GetPlayerChoice(int[] arg)
         {
+
+
             bool hasSelected = false;
             int optionIndex = -1;
             int rollingIndex = 0;
@@ -590,12 +612,17 @@ namespace FightRPG
                 // display the options (8 max or to end of list)
                 for (int i = 0; i + rollingIndex < arg.Length && i < 8; i++)
                 {
-                    GameObject obj = Assets.GetObjectById(arg[i + rollingIndex]);
+                    GameObject? obj = Assets.GetObjectById(arg[i + rollingIndex]);
                     try
                     {
-                       
-                        Console.Write($"{i + 1}: "); //ex Template "{obj.Name}" "{obj.Name} {(cast)obj.Value}"
-                        Console.WriteLine(Format(obj));
+                        Console.Write($"{i + 1}: ");
+                        if (obj != null) 
+                        { 
+                            Console.WriteLine(FormatObjectName(obj));
+                        } else
+                        {
+                            Console.WriteLine("Target not found");
+                        }
                     } catch (Exception ex)
                     {
                         Console.WriteLine($"{i + 1}: Failed to Load - {ex.Message}");
@@ -634,18 +661,43 @@ namespace FightRPG
             }
             int choice = arg[optionIndex];
             return choice;
+        }
+        */
 
+        public static int PlayerChoosesObjectByName(int[] objIds)
+        {
+            Dictionary<string, int> objIdsByName = new();
+
+            foreach(int id in objIds)
+            {
+                GameObject? obj = Assets.GetObjectById(id);
+                if (obj != null)
+                {
+                    objIdsByName.Add(obj.Name, id);
+                }
+            }
+
+            string choice = PlayerChoosesString(objIdsByName.Keys.ToArray());
+            return objIdsByName[choice];
         }
 
-        public static string Format(GameObject obj)
+        
+        public static string FormatObjectName(GameObject obj)
         {
             return $"{obj.Name}";
         }
 
+        
 
-        public static void MoveLocation(Location newLocation, Location prevLocation)
+
+        public static void MoveLocation(int newLocationId)
         {
-            newLocation.TravelTo(prevLocation);
+            Location? newLocation = Assets.GetObjectById<Location>(newLocationId);
+            if (newLocation != null)
+            {
+                SetToStartingLocation();
+            }
+            
             _currentLocation = newLocation;
             //_currentLocation.ChooseAction();
         }
@@ -702,7 +754,7 @@ namespace FightRPG
 
         }
 
-        private static void TestMethod()
+        private static void TestMethod(Func<string, GameObject> format)
         {
             //Fight? obj = Assets.GetObjectById<Fight>(5);
             //Console.WriteLine($"Testing Generic Method {obj}");
@@ -712,6 +764,7 @@ namespace FightRPG
             Console.WriteLine(output);
 
         }
-        
+
+       
     }
 }

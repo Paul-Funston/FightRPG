@@ -8,7 +8,7 @@ namespace FightRPG
 {
     public class Armor : Equipment
     {
-        
+
 
         public Armor(string name, int value, int strength, int defence) : base(name, value, strength, defence)
         {

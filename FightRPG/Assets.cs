@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using FightRPG;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Data;
