@@ -466,7 +466,7 @@ namespace FightRPG
             _actionsAvailable.Add("Fight", PlayRound);
             
             _actionsAvailable.Add("Escape", Travel);
-            _actionsAvailable.Remove("Inventory");
+            _actionsAvailable.Remove("Menu");
             SetHealthyCombatants();
             Assets.AddFight(Id, this);
         }

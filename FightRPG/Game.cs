@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
@@ -21,8 +22,8 @@ namespace FightRPG
         private static Hero? _playerHero = null;
         private static Dictionary<string, Action> _menuActions = new Dictionary<string, Action>()
         {
-            {"Items", UseItem},
-            {"Party", EquipParty },
+            {"Items", OpenInventory},
+            {"Party", PartyEquipment },
             {"View Stats", DisplayStats },
             {"Close", CloseMenu },
 
@@ -474,7 +475,10 @@ namespace FightRPG
         
         public static void OpenMenu() // Open Menu? Inventory, Stats, Party
         {
-            UseItem();
+
+            string choice = PlayerChoosesString(_menuActions.Keys.ToArray());
+            _menuActions[choice].Invoke();
+            
         }
         
         public static void EquipParty()
@@ -500,24 +504,34 @@ namespace FightRPG
                 hero.DisplayEquipment();
             }
         }
-        public static void EquipmentHeroToItem()
+        public static void PartyEquipment()
         {
             ShowPartyAndEquipment();
-            ChoosePartyMember();
-            /*
-             
-             
-             * Pick an Equipment Slot
-             * Get List of Matching Eqiupment in Inventory and their stats
-             * Select Equipment
-             * Tell Party Member to Equip the Item
-             * Party Member Shows the Change and asks confirm?
-             * Old Equipment ++ in Inventory (check if exists)
-             * New Equipment -- in inventory
-            */
+            Hero hero = ChoosePartyMember();
+            string equipType = hero.ChooseEquipType();
+            int newEquipId = SelectInventoryItemByType(equipType);
+            if (newEquipId < 0) { return; }
 
+            Equipment equip = Assets.GetObjectById<Equipment>(newEquipId);
+             if (equip == null)
+            {
+                Console.WriteLine("Item not Found.");
+                return; 
+            } else
+            {
+                equip.Examine();
+            }
+
+            hero.CompareEquipment(newEquipId);
+            Console.WriteLine("Equip?");
+            if (GetPlayerConfirmation())
+            {
+                int currentEquipId = hero.Equip(newEquipId);
+                InventoryAddItem(currentEquipId);
+                InventoryTakeItem(newEquipId);
+            }
         }
-        public static void EquipmentItemToHero()
+        public static void OpenInventory()
         {
             int itemId = SelectInventoryItem();
             if (itemId < 0) { return; }
@@ -526,23 +540,12 @@ namespace FightRPG
             if (item == null) { return; }
 
             item.Examine();
-
+            Console.WriteLine($"Use {item.Name}?");
             if (GetPlayerConfirmation())
             {
                 item.ChooseAction();
             }
             
-            
-            
-             
-            
-             /*
-            
-             
-             * Old Equipment ++ in inventory (check if exists)
-             * new equipment -- in inventory 
-            */
-
         }
 
         public static void TryEquipEquipment(int id)
@@ -550,11 +553,50 @@ namespace FightRPG
             ShowPartyAndEquipment();
             Hero hero = ChoosePartyMember();
             hero.CompareEquipment(id);
+            Console.WriteLine("Equip?");
             if (GetPlayerConfirmation())
             {
-                hero.Equip(id);
+                int currentEquipId = hero.Equip(id);
+                InventoryAddItem(currentEquipId);
+                InventoryTakeItem(id);
             }
         }
+
+        private static void InventoryAddItem(int id)
+        {
+            if (_inventory.Keys.Contains(id))
+            {
+                _inventory[id]++;
+            }
+            else
+            {
+                _inventory[id] = 1;
+            }
+
+        }
+        private static void InventoryTakeItem(int id)
+        {
+            if (_inventory[id] > 1)
+            {
+                _inventory[id]--;
+            }
+            else
+            {
+                _inventory.Remove(id);
+            }
+        }
+
+        private static void CleanInventory()
+        {
+            foreach(KeyValuePair<int,int> pair in _inventory)
+            {
+                if(pair.Value < 1)
+                {
+                    _inventory.Remove(pair.Key);
+                }
+            }
+        }
+
         public static Hero ChoosePartyMember()
         {
             if(_party.Count == 1)
@@ -571,7 +613,7 @@ namespace FightRPG
             // just moves along
         }
         
-        public static Item SelectInventoryItemByType(string type)
+        public static int SelectInventoryItemByType(string type)
         {
             switch (type)
             {
@@ -590,7 +632,7 @@ namespace FightRPG
         }
 
         
-        public static T? SelectInventoryItemOfType<T>() where T : Equipment
+        public static int SelectInventoryItemOfType<T>() where T : Equipment
         {
             Dictionary<string, int> itemChoices = new(); 
             foreach(int id in _inventory.Values)
@@ -609,8 +651,7 @@ namespace FightRPG
             string choice = PlayerChoosesString(itemChoices.Keys.ToArray());
             int choiceId = itemChoices[choice];
 
-            return Assets.GetObjectById<T>(choiceId);
-
+            return choiceId;
         }
 
         public static int SelectInventoryItem()
@@ -634,6 +675,8 @@ namespace FightRPG
 
             return inventoryItemsAndQuantities[choice];
         }
+
+        /*
         public static void UseItem() 
         {
             //_inventory
@@ -668,7 +711,7 @@ namespace FightRPG
                 }
             }
         }
-       
+       */
         /*
         public static void TryEquipEquipment(int id)
         {

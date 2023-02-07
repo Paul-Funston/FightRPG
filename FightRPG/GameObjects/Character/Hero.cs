@@ -13,7 +13,7 @@ namespace FightRPG
         private Weapon _equippedWeapon;
 
         private Dictionary<string, int> _equippedEquipment = new();
-        private Dictionary<Type, int> testDictionary= new(); // Test This!
+        //private Dictionary<Type, int> testDictionary= new(); // Test This!
         public void SetArmor(int id)
         {
             Armor? armor = Assets.GetObjectById<Armor>(id);
@@ -121,7 +121,7 @@ namespace FightRPG
         {
 
         }
-        public int CompareEquipment(int newId)
+        public void CompareEquipment(int newId)
         {
             try
             {
@@ -135,17 +135,16 @@ namespace FightRPG
                         currentEquip.Examine();
                         Console.Write("New: ");
                         newEquip.Examine();
-                        return currentId;
                     }
                 }
             }
             catch { }
 
-            return -1;
         }
-        public void Equip(int id)
+        public int Equip(int newId)
         {
 
+            return oldId;
         }
 
         
