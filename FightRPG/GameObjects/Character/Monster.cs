@@ -17,9 +17,9 @@ namespace FightRPG
         public string Nickname { get { return _nickname; } }
         public override string Name { get { return _nickname + " " + _name; } }
         public string FullName { get { return _nickname + " " + _name; } }
-        protected int _xpPrize = 1;
+        protected readonly int _xpPrize = 1;
         public int XpPrize { get { return _xpPrize; } }
-        protected int _goldPrize = 1;
+        protected readonly int _goldPrize = 1;
         public int GoldPrize { get { return _goldPrize; } }
 
 
@@ -50,13 +50,19 @@ namespace FightRPG
             return $"The {Name} " + base.Examine();
         }
 
-        public Monster(string name, int level, int health, int strength, int defence, int bestiaryIndex) : base(name, level, health, strength, defence)
+        public Monster(string name, int level, int health, int strength, int defence, int bestiaryIndex, int xp = 1, int gold = 2) : base(name, level, health, strength, defence)
         {
             _bestiaryIndex = bestiaryIndex;
+            if (xp < 0 || gold < 0)
+            {
+                throw new Exception("Monster rewards cannot be less than 0");
+            }
+
             SetBonusStats(level);
             SetCurrentHealthToMax();
             _nickname = Assets.GetRandomAdjective();
             Assets.AddMonster(Id, this);
+            
               
         }
 

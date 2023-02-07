@@ -8,7 +8,7 @@ namespace FightRPG
 {
     public class Fight : Location
     {
-        private int _previousLocationId;
+        private readonly int _previousLocationId;
         public int PreviousLocationId { get { return _previousLocationId; } }
         //private HashSet<Hero> _activeParty;
         private int[] _heroIds;
@@ -60,13 +60,15 @@ namespace FightRPG
 
         public override void ChooseAction()
         {
-            Console.WriteLine($"Fight Turn {++_turnCount}");
+            
 
             // if its PlayerTurn - player gets to choose an action // base.ChooseAction() 
             // else  the monsters get to attack MonsterTurn();
             if (_isPlayersTurn)
             {
                 _isPlayersTurn= false;
+                Console.WriteLine($"Fight Turn {++_turnCount}");
+                //Game.Status(); Show Monsters Remaining
                 try
                 {
                     base.ChooseAction();
@@ -175,6 +177,18 @@ namespace FightRPG
             }
         }
 
+        public void Intro()
+        {
+            Console.WriteLine("Danger!");
+            foreach(int monsterId in _monsterIds)
+            {
+                Monster? monster = Assets.GetObjectById<Monster>(monsterId);
+                if(monster != null)
+                {
+                    Console.WriteLine($"A {monster.Name} Attacks");
+                }
+            }
+        }
         /*
         
        
@@ -448,8 +462,9 @@ namespace FightRPG
                 _isPlayersTurn = true;
             }
             CalculateRewards();
-            _actionsAvailable.Add("Fight", PlayRound);
             _actionsAvailable.Remove("Travel");
+            _actionsAvailable.Add("Fight", PlayRound);
+            
             _actionsAvailable.Add("Escape", Travel);
             _actionsAvailable.Remove("Inventory");
             SetHealthyCombatants();

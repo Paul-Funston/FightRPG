@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,8 +18,8 @@ namespace FightRPG
         private Location[] _locationsAvailableArray { get { return _locationsAvailable.ToArray(); } }
 
         //private Location? _previousLocation = null;
-        private int _previousLocationId;
-        public int PreviousLocationId { get { return _previousLocationId; } }
+        //private int _previousLocationId;
+        //public int PreviousLocationId { get { return _previousLocationId; } }
         //public Location? PreviousLocation { get { return _previousLocation; } }
 
         public int AddConnection(Location l)
@@ -43,13 +44,13 @@ namespace FightRPG
 
         protected virtual void Travel()
         {
-            if (_locationsAvailable.Count == 0)
+            if (_connectedLocationsById.Count == 0)
             {
                 Console.WriteLine("Dead end found, returning to Start.");
                 Game.SetToStartingLocation();
-            } else if(_locationsAvailable.Count == 1) 
+            } else if(_connectedLocationsById.Count == 1) 
             {
-                Game.MoveLocation(_locationsAvailable.First().Id);
+                Game.MoveLocation(_connectedLocationsById.First());
             } else
             {
                 
@@ -60,11 +61,7 @@ namespace FightRPG
             }
         }
 
-        public Location TravelTo(int travelingFromId)
-        {
-            _previousLocationId = travelingFromId;
-            return this;
-        }
+
 
 
         /*
@@ -79,6 +76,11 @@ namespace FightRPG
 
             Console.WriteLine($"0: Return to last location");
             return _locationsAvailable.Count();
+        }
+        public Location TravelTo(int travelingFromId)
+        {
+            _previousLocationId = travelingFromId;
+            return this;
         }
  
         public Location GetLocationAtOption(int option)
@@ -230,11 +232,22 @@ namespace FightRPG
             {
                 // Special Travel option
                 Game.MoveLocation(fight.Id);
+                fight.Intro();
             }
             private Fight CreateFight(int[] partyIds, int[] enemyIds)
             {
                 return new Fight(partyIds, enemyIds, Id);
 
+            }
+
+            protected override void Travel()
+            {
+                Console.WriteLine("Are you sure you want to leave the dungeon?");
+                if (Game.GetPlayerConfirmation())
+                {
+                    Game.ReturnToTown();
+                    //base.Travel();
+                }
             }
 
             private void Goblin()
@@ -273,6 +286,8 @@ namespace FightRPG
                 _inhabitants.Add(Treant, 5);
 
                 Assets.AddDungeon(Id, this);
+                _actionsAvailable.Remove("Travel");
+                _actionsAvailable.Add("Return Home", Travel);
             }
         }
 

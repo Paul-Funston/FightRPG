@@ -19,18 +19,26 @@ namespace FightRPG
         private static int _totalWins = 0;
         private static int _timesDefeated = 0;
         private static Hero? _playerHero = null;
-        public static GameObject? _obj = _playerHero;
+        private static Dictionary<string, Action> _menuActions = new Dictionary<string, Action>()
+        {
+            {"Items", UseItem},
+            {"Party", EquipParty },
+            {"View Stats", DisplayStats },
+            {"Close", CloseMenu },
+
+    };
+
 
         private static string? _heroName = null;
         public static int GameDay { get { return _gameDay; } }
         private static bool _firstLoad = true;
-        private static Dictionary<Item, int> _inventory = new Dictionary<Item, int>();
-        private static HashSet<Hero> _party = new();
+        private static Dictionary<int, int> _inventory = new Dictionary<int, int>();
+        private static HashSet<Hero> _party = new(); // Convert to Ids
         
         private static int _currentGold = 0;
         private static int _currentXp = 0;
         private static Location _currentLocation;
-        private static Location? _previousLocation = null;
+            
         private static Dictionary<string, int> _statistics = new Dictionary<string, int>()
         {
             {"Days This Life", _gameDay },
@@ -41,26 +49,24 @@ namespace FightRPG
             
         };
 
-        public static int[] GetActiveParty()
-        {
-            int[] heroIds = new int[_party.Count];
-            Hero[] heroArray = _party.ToArray();
-            for (int i = 0; i < heroIds.Length; i++)
-            {
-                heroIds[i] = heroArray[i].Id;
-            }
-
-            return heroIds;
-        }
+        
 
 
         public static void GameStart()
         {
-            InitializeAssets();
+            
+            if (_firstLoad)
+            {
+                _firstLoad = false;
+                InitializeAssets();
+            }
+
+            ResetVariables();
+            CreatePlayer();
             
             
-            //OpenTownMenu();
-            //TestMethod();
+            SetToStartingLocation();
+            TestMethod();
 
             Console.WriteLine($"Good Luck on your adventure {_playerHero.Name}!");
 
@@ -68,36 +74,34 @@ namespace FightRPG
         }
         private static void InitializeAssets()
         {
-            _party = new();
-            if (_firstLoad)
+            
+            try
             {
-                GetHeroName();
-                try
-                {
-                    Assets.LoadItems();
-                    _firstLoad = false;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                Assets.LoadItems();
+                _firstLoad = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
-            CreatePlayer();
+            Console.WriteLine("Welcome to the game!");
+            GetHeroName();
+            
+            
+        }
 
-
+        private static void ResetVariables()
+        {
+            _party = new();
             _currentGold = 0;
             _currentXp = 0;
             _gameDay = 1;
             _inventory = new();
-
-            
-            SetToStartingLocation();
         }
         private static void GetHeroName()
         {
             _heroName = null;
-            Console.WriteLine("Welcome to the game!");
             while(_heroName == null)
             {
                 Console.WriteLine("Please Name your Hero");
@@ -118,17 +122,13 @@ namespace FightRPG
         }
         private static void CreatePlayer()
         {
-            Armor startingArmor = new Armor("TShirt", 1, 0, 1);
-            Weapon startingWeapon = new Weapon("KeyBlade", 1, 2, 0);
             
-            Console.WriteLine("Welcome to the game!");
-            Console.WriteLine("Please Name your Hero");
 
             while (_playerHero == null)
             {
                 try
                 {
-                    _playerHero = new Hero(_heroName, 1, 20, 5, 5, startingArmor, startingWeapon);
+                    _playerHero = new Hero(_heroName, 1, 20, 5, 5);
                 } catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -138,25 +138,16 @@ namespace FightRPG
             }
 
             _party.Add(_playerHero);
-            _obj = _playerHero;
+            
             
         }
 
-        private static void SetToStartingLocation()
+        public static void SetToStartingLocation()
         {
-            
-            Location? location = null;
-            location = Assets.GetObjectById<Location>(Assets._startingTownId);
-            
+                        
+            _currentLocation = Assets.Town;
 
-            if (location == null)
-            {
-                Console.WriteLine("Could not Find Starting Town.");
-            } else
-            {
-                _currentLocation = location;
-            }
-        }
+                  }
 
         private static void PlayGame()
         {
@@ -171,12 +162,12 @@ namespace FightRPG
             }
 
             //ClearScreen();
-            Status();
-            ClearScreen(4);
+            //Status();
+            ClearScreen(2);
             PlayGame();
         }
 
-    
+
         /*
         private static void OpenMenu()
         {
@@ -319,7 +310,13 @@ namespace FightRPG
             _gameDay++;
         }
         */
-        // Handling Combat
+
+       /*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+        *                                                              *
+        *   Combat                                                     *
+        *                                                              *
+        *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   */
+        
 
         public static void CharacterUseAbility(GameCharacter attacker, int abilityId, int defenderId)
         {
@@ -412,6 +409,16 @@ namespace FightRPG
             return choice;
         }
 
+        public static void ScanEnemy(int id)
+        {
+            Monster? obj = Assets.GetObjectById<Monster>(id);
+            if (obj != null)
+            {
+                obj.Examine();
+            }
+
+        }
+
         // Fight Over
 
         public static void FightWon(Fight fight)
@@ -439,16 +446,308 @@ namespace FightRPG
             Console.WriteLine("You have been defeated...");
             Console.WriteLine("but is it the end?");
             Console.WriteLine("Will you try again? Maybe it will be easier.");
-            // handle Stat Trackin and reincarnation
-            GameStart();
+            if (GetPlayerConfirmation())
+            {
+                GameStart();
+                // handle Stat Trackin and reincarnation
+            }
+            else
+            {
+                Console.WriteLine("Game Over");
+
+            }
+           
         }
 
         private static void GetRewards(Fight fight)
         {
-            // _currentGold += fight.GoldReward;
-            // _currentXp += fight.XpReward;
+             _currentGold += fight.GoldReward;
+             _currentXp += fight.XpReward;
         }
-        // Controls
+
+
+        /*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+         *                                                              *
+         * Items and Inventory                                          *
+         *                                                              *
+         *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   */
+        
+        public static void OpenMenu() // Open Menu? Inventory, Stats, Party
+        {
+            UseItem();
+        }
+        
+        public static void EquipParty()
+        {
+            
+
+            Console.WriteLine("Change Equipment?");
+            if (GetPlayerConfirmation())
+            {
+                Hero hero = ChoosePartyMember();
+                string equipType = hero.ChooseEquipType();
+                SelectInventoryItemByType(equipType);
+                
+            }
+
+            OpenMenu();
+        }
+        public static void ShowPartyAndEquipment()
+        {
+            foreach (Hero hero in _party)
+            {
+                hero.Examine();
+                hero.DisplayEquipment();
+            }
+        }
+        public static void EquipmentHeroToItem()
+        {
+            ShowPartyAndEquipment();
+            ChoosePartyMember();
+            /*
+             
+             
+             * Pick an Equipment Slot
+             * Get List of Matching Eqiupment in Inventory and their stats
+             * Select Equipment
+             * Tell Party Member to Equip the Item
+             * Party Member Shows the Change and asks confirm?
+             * Old Equipment ++ in Inventory (check if exists)
+             * New Equipment -- in inventory
+            */
+
+        }
+        public static void EquipmentItemToHero()
+        {
+            int itemId = SelectInventoryItem();
+            if (itemId < 0) { return; }
+
+            Item? item = Assets.GetObjectById<Item>(itemId);
+            if (item == null) { return; }
+
+            item.Examine();
+
+            if (GetPlayerConfirmation())
+            {
+                item.ChooseAction();
+            }
+            
+            
+            
+             
+            
+             /*
+            
+             
+             * Old Equipment ++ in inventory (check if exists)
+             * new equipment -- in inventory 
+            */
+
+        }
+
+        public static void TryEquipEquipment(int id)
+        {
+            ShowPartyAndEquipment();
+            Hero hero = ChoosePartyMember();
+            hero.CompareEquipment(id);
+            if (GetPlayerConfirmation())
+            {
+                hero.Equip(id);
+            }
+        }
+        public static Hero ChoosePartyMember()
+        {
+            if(_party.Count == 1)
+            {
+                return _party.First();
+            } else
+            {
+                int heroId = PlayerChoosesObjectByName(GetActiveParty());
+                return Assets.GetObjectById<Hero>(heroId);
+            }
+        }
+        public static void CloseMenu()
+        {
+            // just moves along
+        }
+        
+        public static Item SelectInventoryItemByType(string type)
+        {
+            switch (type)
+            {
+                case "Weapon":
+                    return SelectInventoryItemOfType<Weapon>();
+                    
+                case "Armor":
+                    return SelectInventoryItemOfType<Armor>();
+                
+                default:
+                    return SelectInventoryItemOfType<Weapon>();
+
+                    // can add consumable here. would need its own new method.
+            }
+
+        }
+
+        
+        public static T? SelectInventoryItemOfType<T>() where T : Equipment
+        {
+            Dictionary<string, int> itemChoices = new(); 
+            foreach(int id in _inventory.Values)
+            {
+                try
+                {
+                    Equipment? item = Assets.GetObjectById<Equipment>(id);
+                    if(item.GetType() == typeof(T))
+                    {
+                        string s = $"{item.Name} Str: {item.Strength} Def: {item.Defence}";
+                        itemChoices[s] = id;
+                    }
+                } catch(Exception ex) { Console.WriteLine(ex.Message); }
+            }
+
+            string choice = PlayerChoosesString(itemChoices.Keys.ToArray());
+            int choiceId = itemChoices[choice];
+
+            return Assets.GetObjectById<T>(choiceId);
+
+        }
+
+        public static int SelectInventoryItem()
+        {
+            Dictionary<string, int> inventoryItemsAndQuantities = new();
+            foreach (int id in _inventory.Keys)
+            {
+                Item? item = Assets.GetObjectById<Item>(id);
+                if (item != null)
+                {
+                    string itemNameAndQuantity = $"{item.Name}  {_inventory[id]}";
+                    inventoryItemsAndQuantities.Add(itemNameAndQuantity, id);
+                }
+            }
+
+            inventoryItemsAndQuantities.Add("Cancel", 0);
+
+            string choice = PlayerChoosesString(inventoryItemsAndQuantities.Keys.ToArray());
+
+            if (choice == "Cancel") { return -1; }
+
+            return inventoryItemsAndQuantities[choice];
+        }
+        public static void UseItem() 
+        {
+            //_inventory
+            Dictionary<string, int> inventoryItemsAndQuantities = new();
+            foreach (int id in _inventory.Keys)
+            {
+                Item? item = Assets.GetObjectById<Item>(id);
+                if (item != null)
+                {
+                    string itemNameAndQuantity = $"{item.Name}  {_inventory[id]}";
+                    inventoryItemsAndQuantities.Add(itemNameAndQuantity, id);
+                }
+            }
+
+            inventoryItemsAndQuantities.Add("Cancel", 0);
+            
+            string choice = PlayerChoosesString(inventoryItemsAndQuantities.Keys.ToArray());
+            
+            if (choice == "Cancel") { return; }
+
+            
+            int itemId = inventoryItemsAndQuantities[choice];
+            Item? selectedItem = Assets.GetObjectById<Item>(itemId);
+           
+            if (selectedItem != null)
+            {
+                Console.WriteLine($"Use {selectedItem.Name}?");
+                if(GetPlayerConfirmation())
+                {
+                    selectedItem.ChooseAction();
+                    
+                }
+            }
+        }
+       
+        /*
+        public static void TryEquipEquipment(int id)
+        {
+            Equipment? item = Assets.GetObjectById<Equipment>(id);
+
+            int[] partyIds = GetActiveParty();
+            Hero heroToEquip = _party.First();
+
+            
+            if (_party.Count > 1)
+            {
+                Console.WriteLine("Equip which character?");
+                int heroIdToEquip = PlayerChoosesObjectByName(GetActiveParty());
+                heroToEquip = Assets.GetObjectById<Hero>(heroIdToEquip);
+            }
+
+
+            if(heroToEquip.CompareEquip(id))
+            {
+                heroToEquip.EquipItem(id);
+            }
+            
+            
+            
+            try
+            {
+                if (item.GetType() == typeof(Weapon))
+                {
+                    heroToEquip.SetWeapon(id);
+                }
+                else if (item.GetType() == typeof(Armor))
+                {
+                    heroToEquip.SetArmor(id);
+                }
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            //Assets.GetObjectById<item.GetType()>(id);
+        }
+        */
+
+        /*
+        public static bool CompareEquip(int id)
+        {
+            Equipment? newItem = Assets.GetObjectById<Equipment>(id);
+            Equipment? equipped = null;
+            foreach (KeyValuePair<string, int> pair in _equippedEquipment)
+            {
+                Equipment? checkedEquipment = Assets.GetObjectById<Equipment>(pair.Value);
+                if (newItem.GetType() == checkedEquipment.GetType())
+                {
+                    equipped = checkedEquipment;
+                    break;
+
+                }
+            }
+
+            if (equipped != null)
+            {
+                Console.WriteLine($"Replace {equipped.Name} with {newItem.Name}?");
+                Console.WriteLine();
+                Console.WriteLine($"Strength {equipped.Strength} > {newItem.Strength}");
+                Console.WriteLine($"Defence {equipped.Defence} > {newItem.Defence}");
+                Console.WriteLine();
+                return Game.GetPlayerConfirmation();
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+        */
+        /*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+         *                                                              *
+         * Controls and Player Input                                    *
+         *                                                              *
+         *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   */
 
         public static int GetInput()
         {
@@ -461,10 +760,22 @@ namespace FightRPG
                 input = (int)Char.GetNumericValue(test);
 
             }
-
+            ClearScreen();
+            Status();
             return input;
         }
 
+        public static bool GetPlayerConfirmation()
+        {
+            bool hasPlayerConfirmed = false;
+            string[] yesOrNo = new string[2] { "Yes", "No" };
+            string answer = PlayerChoosesString(yesOrNo);
+            if (answer == "Yes")
+            {
+                hasPlayerConfirmed = true;
+            }
+            return hasPlayerConfirmed;
+        }
         public static Location PlayerChooseLocation(Location[] arg)
         {
             Dictionary<string, Location> locationNames = new();
@@ -682,30 +993,34 @@ namespace FightRPG
         }
 
         
-        public static string FormatObjectName(GameObject obj)
-        {
-            return $"{obj.Name}";
-        }
-
-        
-
 
         public static void MoveLocation(int newLocationId)
         {
             Location? newLocation = Assets.GetObjectById<Location>(newLocationId);
             if (newLocation != null)
             {
+                _currentLocation = newLocation;
+                ClearScreen();
+                Status();
+            } else
+            {
                 SetToStartingLocation();
             }
-            
-            _currentLocation = newLocation;
-            //_currentLocation.ChooseAction();
         }
 
-        // Information and Utility Methods
+       /*  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+        *                                                              *
+        *   Information and Utility Methods                            *
+        *                                                              *
+        *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   */
+
+        // 
 
         public static void ReturnToTown()
         {
+            
+            //Status();
+            SetToStartingLocation();
             HealParty();
             _gameDay++;
         }
@@ -735,11 +1050,30 @@ namespace FightRPG
 
         public static void Status()
         {
+            
             Console.Write(_currentLocation.Name);
 
-            Console.Write($" Day {_gameDay}");
+            Console.Write($" Day {_gameDay} ");
 
-  
+            Console.Write($"Gold: {_currentGold} ");
+            Console.Write($"Xp {_currentXp} ");
+
+            // If Dungeon Or Fight Display Health of Party
+            try
+            {
+                if ((Location.Dungeon)_currentLocation != null || (Fight)_currentLocation != null)
+                {
+                    Console.WriteLine();
+                    foreach (Hero hero in _party)
+                    {
+                        Console.Write($"{hero.GetStatus()} ");
+                    }
+                    Console.WriteLine();
+                }
+            } catch (Exception) {  }
+
+            Console.WriteLine();
+    
         }
         public static void DisplayStats()
         {
@@ -747,21 +1081,26 @@ namespace FightRPG
             {
                 Console.WriteLine($"{pair.Key}: {pair.Value}");
             }
+            Console.WriteLine();
         }
 
-        public static void OpenInventory()
+        public static int[] GetActiveParty()
         {
+            int[] heroIds = new int[_party.Count];
+            Hero[] heroArray = _party.ToArray();
+            for (int i = 0; i < heroIds.Length; i++)
+            {
+                heroIds[i] = heroArray[i].Id;
+            }
 
+            return heroIds;
         }
 
-        private static void TestMethod(Func<string, GameObject> format)
+
+        private static void TestMethod()
         {
-            //Fight? obj = Assets.GetObjectById<Fight>(5);
-            //Console.WriteLine($"Testing Generic Method {obj}");
-            string colour = "black";
-            string Format = $"{colour}";
-            string output = $"{Format}";
-            Console.WriteLine(output);
+            
+            
 
         }
 

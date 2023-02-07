@@ -43,8 +43,10 @@ namespace FightRPG
 
         // Items
         private static Dictionary<int, Weapon> _allWeapons = new();
+        public static Dictionary<int,Weapon> AllWeapons { get { return _allWeapons; } } /// Delete this Line!!!!!!!!!!
         private static Dictionary<int, Armor> _allArmor = new();
-
+        public static Weapon noWeapon = new Weapon("nothing", 0, 0, 0);
+        public static Armor noArmor = new Armor("nothing", 0, 0, 0);
         public static void AddWeapon(int id, Weapon obj)
         {
             _allWeapons.Add(id, obj);
@@ -92,7 +94,7 @@ namespace FightRPG
             try
             {
                 return (T)_gameObjects[id];
-            } catch (Exception ex)
+            } catch (Exception)
             {
                 //Console.WriteLine(ex.Message);
                 return null;
@@ -200,6 +202,7 @@ namespace FightRPG
         {
             return new HashSet<Weapon>()
             {
+                
                 new Weapon("Club",          5, 2, 0),
                 new Weapon("Dagger",        10, 3, 0),
                 new Weapon("Spear",         10, 2, 1),
@@ -233,7 +236,7 @@ namespace FightRPG
         }
         private static void InitializeAbilities()
         {
-            new Ability("Attack");
+            
         }
 
         // Consumables?
@@ -362,9 +365,11 @@ namespace FightRPG
             AddTwoWayConnection(Town, Tavern);
             AddTwoWayConnection(Town, Outskirts);
 
-            AddTwoWayConnection(Outskirts, Forest);
-            AddTwoWayConnection(Outskirts, Cave);
-
+            
+            AddOneWayConnection(Outskirts, Forest);
+            AddOneWayConnection(Outskirts, Cave);
+            AddOneWayConnection(Forest, Town);
+            AddOneWayConnection(Cave, Town);
 
             return locations;
         }
@@ -376,9 +381,11 @@ namespace FightRPG
         }
         private static void AddOneWayConnection(Location start, Location end)
         {
+            start.AddConnection(end);
 
         }
 
+       
         // Flavor and Other
  
 

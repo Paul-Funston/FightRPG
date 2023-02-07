@@ -13,7 +13,11 @@ namespace FightRPG
         protected int _value;
         public int Value { get { return _value; } }
 
-        
+        public virtual void Examine()
+        {
+            Console.WriteLine(Name);
+        }
+
 
         // constructors
         public Item(string name, int value) : base(name)

@@ -14,11 +14,20 @@ namespace FightRPG
         private int _defence;
         public int Defence { get { return _defence; } }
 
+        private void EquipItem()
+        {
+            Game.TryEquipEquipment(Id);
+        }
+
+        public override void Examine()
+        {
+            Console.WriteLine($"{Name} Strength:{_strength} Defence:{_defence}");
+        }
         public Equipment(string name, int value, int strength, int defence) : base(name, value)
         {
             _strength= strength;
             _defence= defence;
-
+            _actionsAvailable.Add("Equip", EquipItem);
         }
 
 
