@@ -87,7 +87,7 @@ namespace FightRPG
 
         private new void Travel() 
         {
-            int odds = Assets.Rng % 4;
+            int odds = Assets.Rng % 5;
             if (odds == 0)
             {
                 Console.WriteLine("You failed to escape");
@@ -469,6 +469,7 @@ namespace FightRPG
             _actionsAvailable.Remove("Menu");
             SetHealthyCombatants();
             Assets.AddFight(Id, this);
+            AddConnection(Assets.GetObjectById<Location>(previousLocationId));
         }
     }
 }
