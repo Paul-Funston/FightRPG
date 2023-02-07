@@ -71,14 +71,39 @@ namespace FightRPG
         public override int GetEffectiveStrength()
         {
 
-            return base.GetEffectiveStrength() + _equippedArmor.Strength + _equippedWeapon.Strength;
+            return base.GetEffectiveStrength() + GetEquipStrength();
         }
 
         public override int GetEffectiveDefence()
         {
-            return base.GetEffectiveDefence() + _equippedArmor.Defence + _equippedWeapon.Defence;
+            return base.GetEffectiveDefence() + GetEquipDefence();
         }
 
+        private int GetEquipStrength()
+        {
+            int equipStrength = 0;
+            foreach(int id in _equippedEquipment.Values)
+            {
+                Equipment equip = Assets.GetObjectById<Equipment>(id);
+                if (equip == null) { break; }
+                equipStrength += equip.Strength;
+            }
+            return equipStrength;
+
+        }
+        private int GetEquipDefence()
+        {
+            int equipDefence = 0;
+            foreach (int id in _equippedEquipment.Values)
+            {
+                Equipment equip = Assets.GetObjectById<Equipment>(id);
+                if (equip == null) { break; }
+                equipDefence += equip.Defence;
+            }
+            return equipDefence;
+
+
+        }
         
         public override string Examine()
         {
@@ -101,7 +126,7 @@ namespace FightRPG
         {
             int targetId = GetTarget();
 
-            Game.CharacterUseAbility(this, new Ability("Testing Ability").Id, targetId);
+            Game.CharacterUseAbility(this, Assets._basicAttackId, targetId);
         }
 
         protected override int GetTarget()
@@ -143,6 +168,8 @@ namespace FightRPG
         }
         public int Equip(int newId)
         {
+            int oldId = -1;
+
 
             return oldId;
         }

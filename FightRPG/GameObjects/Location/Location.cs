@@ -113,8 +113,8 @@ namespace FightRPG
 
 
             _actionsAvailable.Add("Travel", Travel);
-            _actionsAvailable.Add("View Stats", Game.DisplayStats );
-            _actionsAvailable.Add("Inventory", Game.OpenInventory );
+           
+            _actionsAvailable.Add("Menu", Game.OpenMenu );
             Assets.AddLocation(Id, this);
         }
 

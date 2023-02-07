@@ -57,7 +57,7 @@ namespace FightRPG
             }
 
             Assets.AddObject(_id, this);
-            Console.WriteLine($"Created Object {_name} Id: {_id}");
+            //Console.WriteLine($"Created Object {_name} Id: {_id}");
 
         }
 

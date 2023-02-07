@@ -99,6 +99,9 @@ namespace FightRPG
             _currentXp = 0;
             _gameDay = 1;
             _inventory = new();
+            _inventory.Add(Assets.umbrella.Id, 1);
+            _inventory.Add(Assets.TShirt.Id, 1);
+
         }
         private static void GetHeroName()
         {
@@ -481,21 +484,7 @@ namespace FightRPG
             
         }
         
-        public static void EquipParty()
-        {
-            
-
-            Console.WriteLine("Change Equipment?");
-            if (GetPlayerConfirmation())
-            {
-                Hero hero = ChoosePartyMember();
-                string equipType = hero.ChooseEquipType();
-                SelectInventoryItemByType(equipType);
-                
-            }
-
-            OpenMenu();
-        }
+       
         public static void ShowPartyAndEquipment()
         {
             foreach (Hero hero in _party)
@@ -510,7 +499,7 @@ namespace FightRPG
             Hero hero = ChoosePartyMember();
             string equipType = hero.ChooseEquipType();
             int newEquipId = SelectInventoryItemByType(equipType);
-            if (newEquipId < 0) { return; }
+            if (newEquipId < 1) { return; }
 
             Equipment equip = Assets.GetObjectById<Equipment>(newEquipId);
              if (equip == null)
@@ -530,6 +519,8 @@ namespace FightRPG
                 InventoryAddItem(currentEquipId);
                 InventoryTakeItem(newEquipId);
             }
+
+            OpenMenu();
         }
         public static void OpenInventory()
         {
@@ -545,7 +536,9 @@ namespace FightRPG
             {
                 item.ChooseAction();
             }
-            
+
+            OpenMenu();
+
         }
 
         public static void TryEquipEquipment(int id)
@@ -647,11 +640,16 @@ namespace FightRPG
                     }
                 } catch(Exception ex) { Console.WriteLine(ex.Message); }
             }
+            
+            if (itemChoices.Count > 0) 
+            {
+                string choice = PlayerChoosesString(itemChoices.Keys.ToArray());
+                int choiceId = itemChoices[choice];
+                return choiceId;
+            }
+            
 
-            string choice = PlayerChoosesString(itemChoices.Keys.ToArray());
-            int choiceId = itemChoices[choice];
-
-            return choiceId;
+            return -1;
         }
 
         public static int SelectInventoryItem()
@@ -891,6 +889,7 @@ namespace FightRPG
 
         public static string PlayerChoosesString(string[] arg)
         {
+            
             bool hasSelected = false;
             int optionIndex = -1;
             int rollingIndex = 0;
@@ -1125,6 +1124,8 @@ namespace FightRPG
                 Console.WriteLine($"{pair.Key}: {pair.Value}");
             }
             Console.WriteLine();
+
+            OpenMenu();
         }
 
         public static int[] GetActiveParty()

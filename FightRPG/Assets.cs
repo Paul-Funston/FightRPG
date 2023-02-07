@@ -43,10 +43,11 @@ namespace FightRPG
 
         // Items
         private static Dictionary<int, Weapon> _allWeapons = new();
-        public static Dictionary<int,Weapon> AllWeapons { get { return _allWeapons; } } /// Delete this Line!!!!!!!!!!
         private static Dictionary<int, Armor> _allArmor = new();
         public static Weapon noWeapon = new Weapon("nothing", 0, 0, 0);
         public static Armor noArmor = new Armor("nothing", 0, 0, 0);
+        public static Weapon umbrella = new Weapon("Umbrella", 1, 1, 0);
+        public static Armor TShirt = new Armor("TShirt", 1, 0, 1);
         public static void AddWeapon(int id, Weapon obj)
         {
             _allWeapons.Add(id, obj);
