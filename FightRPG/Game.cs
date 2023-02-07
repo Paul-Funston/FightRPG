@@ -1126,6 +1126,13 @@ namespace FightRPG
         }
         public static void DisplayStats()
         {
+            _statistics["Days This Life"] = _gameDay;
+            _statistics["Battles Won This Life"] = _battlesWon;
+            _statistics["Times Defeated"] = _timesDefeated;
+            _statistics["Total Days Played"] = _gameDay + _daysPrevious;
+            _statistics["Total Battles Won"] = _totalWins;
+
+            
             foreach(KeyValuePair<string, int> pair in _statistics)
             {
                 Console.WriteLine($"{pair.Key}: {pair.Value}");
