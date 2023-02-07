@@ -186,7 +186,7 @@ namespace FightRPG
 
         public static void LoadItems()
         {
-            Console.WriteLine("Running LoadItems");
+            
             //InitializeAdjectives();
             //InitializeAdverbs();
             InitializeAbilities();

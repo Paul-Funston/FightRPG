@@ -458,6 +458,10 @@ namespace FightRPG
             else
             {
                 Console.WriteLine("Game Over");
+                while (true)
+                {
+
+                }
 
             }
            
@@ -489,13 +493,16 @@ namespace FightRPG
         {
             foreach (Hero hero in _party)
             {
-                hero.Examine();
+                Console.WriteLine(hero.Examine());
+                Console.WriteLine("Currently Equipped");
                 hero.DisplayEquipment();
+                Console.WriteLine();
             }
         }
         public static void PartyEquipment()
         {
             ShowPartyAndEquipment();
+            /*
             Hero hero = ChoosePartyMember();
             string equipType = hero.ChooseEquipType();
             int newEquipId = SelectInventoryItemByType(equipType);
@@ -519,7 +526,7 @@ namespace FightRPG
                 InventoryAddItem(currentEquipId);
                 InventoryTakeItem(newEquipId);
             }
-
+            */
             OpenMenu();
         }
         public static void OpenInventory()

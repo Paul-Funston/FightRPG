@@ -61,7 +61,7 @@ namespace FightRPG
                 Equipment equip = Assets.GetObjectById<Equipment>(pair.Value);
                 if(equip != null)
                 {
-                    Console.WriteLine($"{pair.Key}: Strength{equip.Strength} Defence: {equip.Defence}.");
+                    Console.WriteLine($"{pair.Key}: {equip.Name} Strength:{equip.Strength} Defence:{equip.Defence}");
                 }
                 
             }
@@ -168,9 +168,26 @@ namespace FightRPG
         }
         public int Equip(int newId)
         {
+            Equipment newEquip = Assets.GetObjectById<Equipment>(newId);
+            if (newEquip == null) { return 0; }
             int oldId = -1;
+            string equipSlot = "";
+            foreach (KeyValuePair<string, int> pair in _equippedEquipment)
+            {
+                Equipment oldEquip = Assets.GetObjectById<Equipment>(pair.Value);
+                try
+                {
+                    if (oldEquip.GetType() == newEquip.GetType())
+                    {
+                        oldId = oldEquip.Id;
+                        equipSlot = pair.Key;
 
+                    }
+                }
+                catch (Exception) { }
+            }
 
+            _equippedEquipment[equipSlot] = newId;
             return oldId;
         }
 
